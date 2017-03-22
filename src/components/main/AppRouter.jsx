@@ -20,20 +20,20 @@ export default class AppRouter extends Component {
     const { store } = this.props;
     const state = store.getState();
     
-    if (!state.user.get('loggedIn')) {
-      replace('/login');
+    // if (!state.user.get('loggedIn')) {
+    //   replace('/login');
       // store.dispatch(autoLoginUser(nextState.location.pathname));
-    }
+    // }
   }
   
   
   requiresNoAuth = (nextState, replace) => {
-    const { store } = this.props;
-    const state = store.getState();
+    // const { store } = this.props;
+    // const state = store.getState();
     
-    if (state.user.get('loggedIn')) {
-      replace('/home');
-    }
+    // if (state.user.get('loggedIn')) {
+    //   replace('/home');
+    // }
   }
   
   
