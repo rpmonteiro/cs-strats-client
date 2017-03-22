@@ -1,0 +1,14 @@
+{
+  "rules": {
+    "color-hex-case": "upper",
+    "comment-empty-line-before": null,
+    "comment-whitespace-inside": null,
+    "custom-property-empty-line-before": null,
+    "declaration-colon-newline-after": null,
+    "declaration-empty-line-before": null,
+    "max-empty-lines": 2,
+    "no-eol-whitespace": [true, {"ignore": ["empty-lines"]}],
+    "rule-nested-empty-line-before": null,
+    "shorthand-property-no-redundant-values": null
+  }
+}

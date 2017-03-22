@@ -1,0 +1,60 @@
+{
+  "root": true,
+  "parser": "babel-eslint",
+  "plugins": ["react", "import"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:import/errors",
+    "plugin:import/warnings"
+    ],
+  "env": {
+    "browser": true,
+    "node": true,
+    "es6": true,
+    "jasmine": true,
+    "mocha": true
+  },
+  "rules": {
+    "no-console": 0,
+    "no-sparse-arrays": 2,
+    "no-unreachable": 2,
+    "no-multiple-empty-lines": [1, {"max": 3}],
+    "no-param-reassign": 2,
+    "no-alert": 0,
+    "indent": [1, 2],
+    "quote-props": [1, "as-needed"],
+    "quotes": [2, "single", "avoid-escape"],
+    "comma-spacing": [2, {"before": false, "after": true}],
+    "key-spacing": [2, {"beforeColon": false, "afterColon": true, "mode": "minimum"}],
+    "semi": [1, "always"],
+    "semi-spacing": [1, {"before": false, "after": true}],
+    "keyword-spacing": [2, {"before": true, "after": true}],
+    "space-before-blocks": [1, "always"],
+    "space-before-function-paren": [1, {"anonymous": "always", "named": "never"}],
+    "curly": 2,
+    "object-curly-spacing": 0,
+    "brace-style": 2,
+    "array-bracket-spacing": 0,
+    "space-in-parens": [1, "never"],
+    "space-infix-ops": 1,
+    "space-unary-ops": [1, {"words": true, "nonwords": false}],
+    "spaced-comment": [1, "always"],
+    "strict": 0,
+    "prefer-const": ["error", {"destructuring": "any"}],
+    "react/display-name": 0,
+    "react/no-danger": 0,
+    "import/named": 2,
+    "import/no-unresolved": 0,
+  },
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaVersion": 6,
+    "ecmaFeatures": {
+      "jsx": true,
+      "experimentalObjectRestSpread": true,
+      "modules": true,
+      "classes": true
+    }
+  }
+}
