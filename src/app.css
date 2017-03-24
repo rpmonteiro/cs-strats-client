@@ -1,3 +1,21 @@
 body {
   background-color: #000;
 }
+
+.player-marker {
+  cursor: pointer;
+  background-color: red;
+  position: absolute;
+  height: 20px;
+  width: 20px;
+  border-radius: 20px;
+}
+
+.main-container img {
+  user-select: none;
+}
+
+
+.player-marker.active {
+  background-color: white;
+}
