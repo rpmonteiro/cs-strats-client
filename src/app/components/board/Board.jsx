@@ -1,8 +1,8 @@
 import React, { PropTypes, PureComponent } from 'react';
-import src from '../../images/de_inferno.jpg';
+import src from 'images/de_inferno.jpg';
 
 
-export default class MainView extends PureComponent {
+export default class Board extends PureComponent {
 
   state = {
     selected: false,
