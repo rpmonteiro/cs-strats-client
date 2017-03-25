@@ -1,3 +1,8 @@
+html {
+  height: 100%;
+  width: 100%;
+}
+
 body {
   background-color: #000;
 }
@@ -13,6 +18,13 @@ body {
 
 .main-container img {
   user-select: none;
+}
+
+.main-container svg {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  pointer-events: none;
 }
 
 

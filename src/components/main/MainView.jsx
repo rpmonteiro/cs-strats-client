@@ -7,7 +7,8 @@ export default class MainView extends PureComponent {
   state = {
     selected: false,
     mouseDown: false,
-    selectedEl: ''
+    activeEl: '',
+    activeLine: ''
   }
   
   
@@ -23,7 +24,7 @@ export default class MainView extends PureComponent {
   
   startDrag = (e) => {
     this.setState({
-      selectedEl: e.target,
+      activeEl: e.target,
       mouseDown: true
     });
   }
@@ -31,29 +32,75 @@ export default class MainView extends PureComponent {
   
   stopDrag = () => {
     this.setState({
-      selectedEl: '',
+      activeEl: '',
       dragging: false,
       mouseDown: false
     });
   }
   
   
+  makeLine = () => {
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.style.stroke = '#FFF';
+    line.style.strokeWidth = '3px';
+    return line;
+  }
+  
+  
+  makeSquare = () => {
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    const style = 'fill: yellow; stroke: back; stroke-width: 1';
+    rect.setAttribute('width', '10');
+    rect.setAttribute('height', '10');
+    rect.setAttribute('style', style);
+    return rect;
+  }
+  
+  
   mouseMoveHandler = (e) => {
-    const { selectedEl, mouseDown, dragging } = this.state;
+    const { activeEl, activeLine, mouseDown, dragging } = this.state;
     
-    if (selectedEl && mouseDown) {
+    if (activeEl && mouseDown) {
       const newStyle = `top:${e.clientY - 10}px; left:${e.clientX - 10}px`;
-      selectedEl.setAttribute('style', newStyle);
+      activeEl.setAttribute('style', newStyle);
       
       if (!dragging) {
         this.setState({dragging: true});
       }
     }
+    
+    if (activeEl && activeLine) {
+      const line = activeLine;
+      line.setAttribute('x2', e.clientX - 10);
+      line.setAttribute('y2', e.clientY - 10);
+    }
   }
   
   
   clickHandler = (e) => {
+    const { activeLine } = this.state;
+    
     if (e.target !== this.refs.map) {
+      return;
+    }
+    
+    if (activeLine) {
+      const lineX = activeLine.getAttribute('x2');
+      const lineY = activeLine.getAttribute('y2');
+      
+      const square = this.makeSquare();
+      square.setAttribute('x', lineX - 5);
+      square.setAttribute('y', lineY - 5);
+      this.refs.svg.appendChild(square);
+      
+      
+      const line = this.makeLine();
+      line.setAttribute('x1', lineX);
+      line.setAttribute('y1', lineY);
+      line.setAttribute('x2', lineX);
+      line.setAttribute('y2', lineY);
+      this.refs.svg.appendChild(line);
+      this.setState({activeLine: line});
       return;
     }
 
@@ -70,7 +117,7 @@ export default class MainView extends PureComponent {
   
   
   elClickHandler = (e) => {
-    const { selected, dragging } = this.state;
+    const { selected, dragging, activeEl } = this.state;
 
     if (dragging) {
       this.stopDrag();
@@ -84,18 +131,29 @@ export default class MainView extends PureComponent {
 
     const el = e.target;
     el.classList.add('active');
-    this.setState({selected: true, selectedEl: el, mouseDown: false});
+    
+    const line = this.makeLine();
+    line.setAttribute('x1', parseInt(activeEl.style.left));
+    line.setAttribute('y1', parseInt(activeEl.style.top));
+    this.refs.svg.appendChild(line);
+    
+    this.setState({
+      selected: true,
+      activeEl: el,
+      activeLine: line,
+      mouseDown: false
+    });
   }
   
   
   unselectEl = () => {
-    const { selectedEl } = this.state;
+    const { activeEl } = this.state;
     
-    if (selectedEl) {
-      selectedEl.classList.remove('active');
+    if (activeEl) {
+      activeEl.classList.remove('active');
     }
     
-    this.setState({selected: false, selectedEl: '', mouseDown: false});
+    this.setState({selected: false, activeEl: '', mouseDown: false});
   }
   
   
@@ -118,6 +176,7 @@ export default class MainView extends PureComponent {
         onMouseMove={this.mouseMoveHandler}
         ref="container"
       >
+        <svg ref="svg"></svg>
         <img ref="map" draggable="false" src={src}></img>
       </div>
     );
