@@ -43,7 +43,7 @@ export default class Container extends Component {
   }
   
   clickHandler = (e) => {
-    if (this.state.justDropped) {
+    if (this.state.justDropped || !e.target.classList.contains('drag-container')) {
       this.setState({justDropped: false});
       return;
     }
