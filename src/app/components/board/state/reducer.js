@@ -24,3 +24,16 @@ export default function reducer(state = initialState, action = {}) {
     return state;
   }
 }
+
+// players: {
+//   0: {
+//     0: {
+//       x: 'x',
+//       y: 'y'
+//     },
+//     5: {
+//       x: 'x',
+//       y: 'y'
+//     }
+//   }
+// }

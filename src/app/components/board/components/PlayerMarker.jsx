@@ -36,7 +36,9 @@ export default class PlayerMarker extends Component {
   static propTypes = {
     connectDragSource: PropTypes.func.isRequired,
     connectDragPreview: PropTypes.func.isRequired,
+    clickHandler: PropTypes.func.isRequired,
     isDragging: PropTypes.bool.isRequired,
+    className: PropTypes.string.isRequired,
     id: PropTypes.number.isRequired,
     x: PropTypes.number.isRequired,
     y: PropTypes.number.isRequired,
@@ -49,14 +51,13 @@ export default class PlayerMarker extends Component {
   }
 
   render() {
-    const { connectDragSource } = this.props;
-
-    let className = 'player-marker';
-    // active ? className += ' active' : '';
+    const { connectDragSource, className, id, clickHandler } = this.props;
 
     return connectDragSource(
-      <div style={getStyles(this.props)}
-        className={className}>
+      <div className={className}
+        onClick={clickHandler}
+        style={getStyles(this.props)}
+        data-id={id}>
       </div>
     );
   }

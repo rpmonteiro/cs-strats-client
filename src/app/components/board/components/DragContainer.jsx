@@ -35,7 +35,8 @@ export default class Container extends Component {
   }
   
   state = {
-    justDropped: false
+    justDropped: false,
+    activeMarker: ''
   }
   
   justDropped = () => {
@@ -58,17 +59,37 @@ export default class Container extends Component {
   }
   
   
+  markerHandler = (e) => {
+    const id = e.target.dataset.id;
+    const { activeMarker } = this.state;
+    
+    if (activeMarker !== '') {
+      this.setState({activeMarker: ''});
+    } else {
+      this.setState({activeMarker: parseInt(id)});
+    }
+  }
+  
+  
   render() {
-    const { connectDropTarget, players, dispatch } = this.props;
+    const { connectDropTarget, players } = this.props;
+    const { activeMarker } = this.state;
 
     const playerMarkers = players.map(p => {
+      const id = p.id;
+      let className = 'player-marker';
+      if (activeMarker === id) {
+        className += ' active';
+      }
+      
       return (
         <PlayerMarker
-          key={`p-${p.id}`}
-          id={p.id}
+          clickHandler={this.markerHandler}
+          className={className}
+          key={`p-${id}`}
+          id={id}
           x={p.x}
           y={p.y}
-          dispatch={dispatch}
         />
       );
     });
