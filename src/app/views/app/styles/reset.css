@@ -1,0 +1,44 @@
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+img,
+svg {
+  max-height: 100%;
+}
+
+
+/* tachyons-box-sizing.css */
+nav,
+main,
+section,
+article,
+aside,
+header,
+footer,
+div,
+details,
+summary,
+form,
+fieldset,
+textarea,
+input[type="text"],
+input[type="tel"],
+input[type="url"],
+input[type="email"],
+input[type="search"],
+input[type="number"],
+input[type="password"],
+.border-box {
+  box-sizing: border-box;
+}
+
+
+html,
+body {
+  touch-action: none;
+}

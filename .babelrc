@@ -9,6 +9,7 @@
         }
       }
     ],
+    "transform-decorators-legacy",
     "transform-runtime"
   ],
   "presets": [

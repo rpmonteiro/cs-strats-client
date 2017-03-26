@@ -20,7 +20,7 @@ export default class Editor extends PureComponent {
     
     
     return (
-      <div>
+      <div className="editor">
         <Board />
       </div>
     );
