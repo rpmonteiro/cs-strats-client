@@ -3,7 +3,7 @@
 import React, { PropTypes, Component } from 'react';
 import { Router, Route }               from 'react-router';
 
-import MainView from './MainView';
+import Editor from 'views/editor/Editor';
 
 // import { autoLoginUser, logoutUser } from 'le/views/user/state/actions-login';
 
@@ -50,7 +50,7 @@ export default class AppRouter extends Component {
     
     return (
       <Router history={history}>
-        <Route path="/" component={MainView} onEnter={this.requiresNoAuth} />
+        <Route path="/" component={Editor} onEnter={this.requiresNoAuth} />
         {/* <Route path="/login" component={LoginView} onEnter={this.requiresNoAuth} />
           <Route path="/logout" component={LoginView} onEnter={this.logout} />
           <Route component={App} onEnter={this.requiresAuth}>

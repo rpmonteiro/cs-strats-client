@@ -9,7 +9,7 @@ import { AppContainer }         from 'react-hot-loader';
 import { hashHistory }          from 'react-router';
 import { syncHistoryWithStore } from 'react-router-redux';
 import configureStore           from './state/configure-store';
-import MainContainer            from './components/main/MainContainer';
+import MainContainer            from 'views/app/AppContainer';
 
 window.addEventListener('unhandledrejection', event => {
   // Prevent error output on the console

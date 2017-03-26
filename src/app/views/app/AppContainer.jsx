@@ -3,7 +3,7 @@
 
 import React        from 'react';
 import { Provider } from 'react-redux';
-import AppRouter    from './AppRouter';
+import AppRouter    from './components/AppRouter';
 
 export default function AppContainer({store, history}) {
   // wrap in the Redux Provider so that the store is added to the context for the child components
