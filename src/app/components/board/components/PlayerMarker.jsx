@@ -2,8 +2,6 @@ import React, { Component, PropTypes } from 'react';
 import { DragSource }                  from 'react-dnd';
 import ItemTypes                       from '../ItemTypes';
 import { getEmptyImage }               from 'react-dnd-html5-backend';
-import ReactDOM                        from 'react-dom';
-import { updatePlayerMarker }          from '../state/actions';
 
 
 const markerSource = {
@@ -39,7 +37,6 @@ export default class PlayerMarker extends Component {
     connectDragSource: PropTypes.func.isRequired,
     connectDragPreview: PropTypes.func.isRequired,
     isDragging: PropTypes.bool.isRequired,
-    dispatch: PropTypes.func.isRequired,
     id: PropTypes.number.isRequired,
     x: PropTypes.number.isRequired,
     y: PropTypes.number.isRequired,
@@ -58,7 +55,7 @@ export default class PlayerMarker extends Component {
     // active ? className += ' active' : '';
 
     return connectDragSource(
-      <div ref={node => (this.node = node)} style={getStyles(this.props)}
+      <div style={getStyles(this.props)}
         className={className}>
       </div>
     );

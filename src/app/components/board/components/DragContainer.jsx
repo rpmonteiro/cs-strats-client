@@ -3,17 +3,22 @@ import React, { Component, PropTypes } from 'react';
 import { DropTarget }                  from 'react-dnd';
 import ItemTypes                       from '../ItemTypes';
 import PlayerMarker                    from './PlayerMarker';
-import { updatePlayerMarker }          from '../state/actions';
+
+import {
+  updatePlayerMarker,
+  addPlayerMarker
+} from '../state/actions';
 
 
 const dropSource = {
-  drop(props, monitor) {
+  drop(props, monitor, component) {
     const { x: initialX, y: initialY, id } = monitor.getItem();
     const { x: xOffset, y: yOffset } = monitor.getDifferenceFromInitialOffset();
-    
+
     const x = initialX + xOffset;
     const y = initialY + yOffset;
     
+    component.justDropped();
     props.dispatch(updatePlayerMarker({x, y, id}));
   }
 };
@@ -28,6 +33,30 @@ export default class Container extends Component {
     dispatch:          PropTypes.func.isRequired,
     connectDropTarget: PropTypes.func.isRequired
   }
+  
+  state = {
+    justDropped: false
+  }
+  
+  justDropped = () => {
+    this.setState({justDropped: true});
+  }
+  
+  clickHandler = (e) => {
+    if (this.state.justDropped) {
+      this.setState({justDropped: false});
+      return;
+    }
+    
+    const offsetY = e.target.parentNode.offsetTop;
+    const offsetX = e.target.parentNode.offsetLeft;
+    
+    const x = e.clientX - offsetX - 10;
+    const y = e.clientY - offsetY - 10;
+    
+    this.props.dispatch(addPlayerMarker(x, y));
+  }
+  
   
   render() {
     const { connectDropTarget, players, dispatch } = this.props;
@@ -45,7 +74,7 @@ export default class Container extends Component {
     });
 
     return connectDropTarget(
-      <div className="drag-container">
+      <div className="drag-container" onClick={this.clickHandler}>
         {playerMarkers}
       </div>
     );

@@ -20,26 +20,12 @@ export class Board extends PureComponent {
   state = {
     
   }
-  
-  
-  clickHandler = (e) => {
-    e.persist();
-    const { offsetTop, offsetLeft } = this.refs.board;
-    const markerX = e.clientX - offsetLeft - 10;
-    const markerY = e.clientY - offsetTop - 10;
-    this.props.dispatch(addPlayerMarker(markerX, markerY));
-  }
-
 
   render() {
     const { players, dispatch } = this.props;
     
     return (
-      <div
-        className="board"
-        onClick={this.clickHandler}
-        ref="board"
-      >
+      <div className="board">
         <DragContainer dispatch={dispatch} players={players} />
         <CustomDragLayer />
         {/* <svg className="paths" ref="svg"></svg> */}
