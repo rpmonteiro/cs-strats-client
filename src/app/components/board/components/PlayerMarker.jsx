@@ -1,6 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { DragSource }                  from 'react-dnd';
-import ItemTypes                       from '../ItemTypes';
+import ItemTypes                       from '../utils/ItemTypes';
 import { getEmptyImage }               from 'react-dnd-html5-backend';
 
 

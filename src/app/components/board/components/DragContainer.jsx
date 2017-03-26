@@ -1,8 +1,9 @@
 
 import React, { Component, PropTypes } from 'react';
 import { DropTarget }                  from 'react-dnd';
-import ItemTypes                       from '../ItemTypes';
+import ItemTypes                       from '../utils/ItemTypes';
 import PlayerMarker                    from './PlayerMarker';
+import { line, square }                from '../utils/svgShapes';
 
 import {
   updatePlayerMarker,
@@ -36,12 +37,15 @@ export default class Container extends Component {
   
   state = {
     justDropped: false,
-    activeMarker: ''
+    activeMarkerId: '',
+    activeLine: ''
   }
+  
   
   justDropped = () => {
     this.setState({justDropped: true});
   }
+  
   
   clickHandler = (e) => {
     if (this.state.justDropped || !e.target.classList.contains('drag-container')) {
@@ -61,24 +65,64 @@ export default class Container extends Component {
   
   markerHandler = (e) => {
     const id = e.target.dataset.id;
-    const { activeMarker } = this.state;
+    const { activeMarkerId } = this.state;
     
-    if (activeMarker !== '') {
-      this.setState({activeMarker: ''});
+    if (activeMarkerId !== '') {
+      this.setState({activeMarkerId: ''});
     } else {
-      this.setState({activeMarker: parseInt(id)});
+      const elTransform = window.getComputedStyle(e.target, null).getPropertyValue('transform');
+      let values = elTransform.split('(')[1];
+      values = values.split(')')[0];
+      values = values.split(',');
+      
+      const x = values[4];
+      const y = values[5];
+      
+      const newLine = line();
+      newLine.setAttribute('x1', x);
+      newLine.setAttribute('y1', y);
+      this.refs.svg.appendChild(newLine);
+      
+      this.setState({
+        activeMarkerId: parseInt(id),
+        activeLine: newLine
+      });
     }
+  }
+  
+  
+  drawPath = () => {
+    const { activeLine } = this.state;
+    if (!activeLine) {
+      return;
+    }
+    
+    const lineX = activeLine.getAttribute('x2');
+    const lineY = activeLine.getAttribute('y2');
+    
+    const square = square();
+    square.setAttribute('x', lineX - 5);
+    square.setAttribute('y', lineY - 5);
+    this.refs.svg.appendChild(square);
+    
+    const line = line();
+    line.setAttribute('x1', lineX);
+    line.setAttribute('y1', lineY);
+    line.setAttribute('x2', lineX);
+    line.setAttribute('y2', lineY);
+    this.refs.svg.appendChild(line);
+    this.setState({activeLine: line});
   }
   
   
   render() {
     const { connectDropTarget, players } = this.props;
-    const { activeMarker } = this.state;
+    const { activeMarkerId } = this.state;
 
     const playerMarkers = players.map(p => {
       const id = p.id;
       let className = 'player-marker';
-      if (activeMarker === id) {
+      if (activeMarkerId === id) {
         className += ' active';
       }
       
@@ -96,6 +140,7 @@ export default class Container extends Component {
 
     return connectDropTarget(
       <div className="drag-container" onClick={this.clickHandler}>
+        <svg className="paths" ref="svg"></svg>
         {playerMarkers}
       </div>
     );

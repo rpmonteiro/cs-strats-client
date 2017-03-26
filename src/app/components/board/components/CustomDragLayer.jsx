@@ -1,6 +1,6 @@
 import React, { PureComponent, PropTypes } from 'react';
 import { DragLayer }                   from 'react-dnd';
-import ItemTypes                       from '../ItemTypes';
+import ItemTypes                       from '../utils/ItemTypes';
 import PlayerMarkerPreview             from './PlayerMarkerPreview';
 
 
