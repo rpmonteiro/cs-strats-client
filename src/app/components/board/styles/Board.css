@@ -24,9 +24,14 @@
   border-radius: 20px;
 }
 
-.board img {
+.map {
   user-select: none;
   pointer-events: none;
+  height: 100%;
+  width: 100%;
+  background-image: url('../../../../images/de_inferno.jpg');
+  background-repeat: no-repeat;
+  background-size: contain;
 }
 
 .paths {

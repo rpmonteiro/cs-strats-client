@@ -28,7 +28,7 @@ export class Board extends PureComponent {
       <div className="board">
         <DragContainer dispatch={dispatch} players={players} />
         <CustomDragLayer />
-        <img ref="map" src={src}></img>
+        <div className="map"></div>
       </div>
     );
   }
