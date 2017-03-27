@@ -24,6 +24,7 @@ const dropSource = {
   }
 };
 
+
 @DropTarget(ItemTypes.PLAYER, dropSource, connect => ({
   connectDropTarget: connect.dropTarget()
 }))
@@ -42,6 +43,16 @@ export default class Container extends Component {
   }
   
   
+  componentWillMount() {
+    document.addEventListener('keydown', this.keydownHandler);
+  }
+  
+  
+  componentWillUnmount() {
+    document.removeEventListener('keydown', this.keydownHandler);
+  }
+  
+  
   justDropped = () => {
     this.setState({justDropped: true});
   }
@@ -53,13 +64,20 @@ export default class Container extends Component {
       return;
     }
     
-    const offsetY = e.target.parentNode.offsetTop;
-    const offsetX = e.target.parentNode.offsetLeft;
+    const { x: eventX, y: eventY } = this.getXYCoords(e);
     
-    const x = e.clientX - offsetX - 10;
-    const y = e.clientY - offsetY - 10;
+    const x = eventX - 10;
+    const y = eventY - 10;
     
     this.props.dispatch(addPlayerMarker(x, y));
+  }
+  
+  
+  getXYCoords = (e) => {
+    return {
+      x: e.clientX - e.target.parentNode.offsetLeft,
+      y: e.clientY - e.target.parentNode.offsetTop
+    };
   }
   
   
@@ -80,7 +98,9 @@ export default class Container extends Component {
       
       const newLine = line();
       newLine.setAttribute('x1', x);
+      newLine.setAttribute('x2', x);
       newLine.setAttribute('y1', y);
+      newLine.setAttribute('y2', y);
       this.refs.svg.appendChild(newLine);
       
       this.setState({
@@ -88,6 +108,39 @@ export default class Container extends Component {
         activeLine: newLine
       });
     }
+  }
+  
+  
+  moveHandler = (e) => {
+    const { activeLine } = this.state;
+    
+    if (activeLine) {
+      const { x, y } = this.getXYCoords(e);
+      
+      activeLine.setAttribute('x2', x);
+      activeLine.setAttribute('y2', y);
+    }
+  }
+  
+  
+  keydownHandler = (e) => {
+    const key = e.which || e.keycode;
+    console.log('onKeyDown');
+    if (key === 27) { // escape
+      console.log('escape key pressed');
+      this.resetSelections();
+    }
+  }
+  
+  
+  resetSelections = () => {
+    const { activeLine } = this.state;
+    
+    activeLine.parentNode.removeChild(activeLine);
+    this.setState({
+      activeMarkerId: '',
+      activeLine: ''
+    });
   }
   
   
@@ -108,11 +161,10 @@ export default class Container extends Component {
     const line = line();
     line.setAttribute('x1', lineX);
     line.setAttribute('y1', lineY);
-    line.setAttribute('x2', lineX);
-    line.setAttribute('y2', lineY);
     this.refs.svg.appendChild(line);
     this.setState({activeLine: line});
   }
+  
   
   
   render() {
@@ -139,7 +191,11 @@ export default class Container extends Component {
     });
 
     return connectDropTarget(
-      <div className="drag-container" onClick={this.clickHandler}>
+      <div
+        className="drag-container"
+        onClick={this.clickHandler}
+        onMouseMove={this.moveHandler}
+      >
         <svg className="paths" ref="svg"></svg>
         {playerMarkers}
       </div>

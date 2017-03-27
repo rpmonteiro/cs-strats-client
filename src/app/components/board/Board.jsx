@@ -1,12 +1,9 @@
 import React, { PropTypes, PureComponent } from 'react';
 import { connect }                         from 'react-redux';
-import src                                 from 'images/de_inferno.jpg';
-import { addPlayerMarker }                 from './state/actions';
 import { DragDropContext }                 from 'react-dnd';
 import MouseBackend                        from 'react-dnd-mouse-backend';
 import CustomDragLayer                     from './components/CustomDragLayer';
 import DragContainer                       from './components/DragContainer';
-
 
 
 @DragDropContext(MouseBackend)
