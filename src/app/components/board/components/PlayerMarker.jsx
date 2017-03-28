@@ -7,7 +7,7 @@ import { getEmptyImage }               from 'react-dnd-html5-backend';
 const markerSource = {
   beginDrag(props) {
     const { id, x, y } = props;
-    return {id, x, y};
+    return { id, x, y };
   }
 };
 

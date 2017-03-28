@@ -3,11 +3,12 @@ import React, { Component, PropTypes } from 'react';
 import { DropTarget }                  from 'react-dnd';
 import ItemTypes                       from '../utils/ItemTypes';
 import PlayerMarker                    from './PlayerMarker';
-import { line, square }                from '../utils/svgShapes';
+import { makeLine, makeSquare }        from '../utils/svgShapes';
 
 import {
   updatePlayerMarker,
-  addPlayerMarker
+  addPlayerMarker,
+  addPathNode
 } from '../state/actions';
 
 
@@ -59,8 +60,15 @@ export default class Container extends Component {
   
   
   clickHandler = (e) => {
+    const { activeLine } = this.state;
+    
     if (this.state.justDropped || !e.target.classList.contains('drag-container')) {
       this.setState({justDropped: false});
+      return;
+    }
+    
+    if (activeLine) {
+      this.drawPath(e);
       return;
     }
     
@@ -96,16 +104,16 @@ export default class Container extends Component {
       const x = values[4];
       const y = values[5];
       
-      const newLine = line();
-      newLine.setAttribute('x1', x);
-      newLine.setAttribute('x2', x);
-      newLine.setAttribute('y1', y);
-      newLine.setAttribute('y2', y);
-      this.refs.svg.appendChild(newLine);
+      const line = makeLine();
+      line.setAttribute('x1', x);
+      line.setAttribute('x2', x);
+      line.setAttribute('y1', y);
+      line.setAttribute('y2', y);
+      this.refs.svg.appendChild(line);
       
       this.setState({
         activeMarkerId: parseInt(id),
-        activeLine: newLine
+        activeLine: line
       });
     }
   }
@@ -136,33 +144,42 @@ export default class Container extends Component {
   resetSelections = () => {
     const { activeLine } = this.state;
     
-    activeLine.parentNode.removeChild(activeLine);
-    this.setState({
-      activeMarkerId: '',
-      activeLine: ''
-    });
+    if (activeLine) {
+      activeLine.parentNode.removeChild(activeLine);
+      this.setState({
+        activeMarkerId: '',
+        activeLine: ''
+      });
+    }
   }
   
   
   drawPath = () => {
-    const { activeLine } = this.state;
-    if (!activeLine) {
-      return;
-    }
+    const { activeLine, activeMarkerId } = this.state;
+    const { dispatch } = this.props;
+
     
-    const lineX = activeLine.getAttribute('x2');
-    const lineY = activeLine.getAttribute('y2');
+    const x1 = activeLine.getAttribute('x1');
+    const x2 = activeLine.getAttribute('x2');
     
-    const square = square();
-    square.setAttribute('x', lineX - 5);
-    square.setAttribute('y', lineY - 5);
+    const y1 = activeLine.getAttribute('y1');
+    const y2 = activeLine.getAttribute('y2');
+    
+    const squareWidth = 10;
+    const square = makeSquare();
+    square.setAttribute('x', x2 - squareWidth / 2);
+    square.setAttribute('y', y2 - squareWidth / 2);
     this.refs.svg.appendChild(square);
     
-    const line = line();
-    line.setAttribute('x1', lineX);
-    line.setAttribute('y1', lineY);
+    const line = makeLine();
+    line.setAttribute('x1', x2);
+    line.setAttribute('x2', x2);
+    line.setAttribute('y1', y2);
+    line.setAttribute('y2', y2);
     this.refs.svg.appendChild(line);
     this.setState({activeLine: line});
+
+    dispatch(addPathNode({x1, x2, y1, y2}, activeMarkerId));
   }
   
   
@@ -172,20 +189,20 @@ export default class Container extends Component {
     const { activeMarkerId } = this.state;
 
     const playerMarkers = players.map(p => {
-      const id = p.id;
+      const id = p.get('id');
       let className = 'player-marker';
       if (activeMarkerId === id) {
         className += ' active';
       }
-      
+
       return (
         <PlayerMarker
           clickHandler={this.markerHandler}
           className={className}
           key={`p-${id}`}
           id={id}
-          x={p.x}
-          y={p.y}
+          x={p.get('x')}
+          y={p.get('y')}
         />
       );
     });
