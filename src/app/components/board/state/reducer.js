@@ -3,7 +3,28 @@ import * as types from './action-types';
 
 const initialState = fromJS({
   roundDuration: 87,
-  players: {},
+  players: {
+    1: {
+      id: 1,
+      x: 300,
+      y: 300,
+      time: 87,
+      paths: {
+        2: {
+          x1: 300,
+          x2: 350,
+          y1: 300,
+          y2: 350
+        },
+        5: {
+          x1: 350,
+          x2: 450,
+          y1: 350,
+          y2: 600
+        }
+      }
+    }
+  },
   roundTime: 87
 });
 

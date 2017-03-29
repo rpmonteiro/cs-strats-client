@@ -3,6 +3,7 @@ import React, { Component, PropTypes } from 'react';
 import { DropTarget }                  from 'react-dnd';
 import ItemTypes                       from '../utils/ItemTypes';
 import PlayerMarker                    from './PlayerMarker';
+import Path                            from './Path';
 import { makeLine, makeSquare }        from '../utils/svgShapes';
 
 import {
@@ -187,15 +188,30 @@ export default class Container extends Component {
   render() {
     const { connectDropTarget, players } = this.props;
     const { activeMarkerId } = this.state;
-
-    const playerMarkers = players.map(p => {
+    
+    const pathNodes = [], playerMarkers = [];
+    players.map(p => {
       const id = p.get('id');
+        
+      const paths = p.get('paths');
+      paths.map(path => {
+        pathNodes.push(
+          <Path
+            x1={path.get('x1')}
+            x2={path.get('x2')}
+            y1={path.get('y1')}
+            y2={path.get('y2')}
+            markerId={id}
+          />
+        );
+      });
+      
       let className = 'player-marker';
       if (activeMarkerId === id) {
         className += ' active';
       }
 
-      return (
+      playerMarkers.push(
         <PlayerMarker
           clickHandler={this.markerHandler}
           className={className}
@@ -213,7 +229,9 @@ export default class Container extends Component {
         onClick={this.clickHandler}
         onMouseMove={this.moveHandler}
       >
-        <svg className="paths" ref="svg"></svg>
+        <svg className="paths" ref="svg">
+          {pathNodes}
+        </svg>
         {playerMarkers}
       </div>
     );

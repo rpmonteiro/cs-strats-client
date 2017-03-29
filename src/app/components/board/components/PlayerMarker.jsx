@@ -3,6 +3,7 @@ import { DragSource }                  from 'react-dnd';
 import ItemTypes                       from '../utils/ItemTypes';
 import { getEmptyImage }               from 'react-dnd-html5-backend';
 
+const MARKER_WIDTH = 20;
 
 const markerSource = {
   beginDrag(props) {
@@ -14,7 +15,7 @@ const markerSource = {
 
 function getStyles(props) {
   const { x, y, isDragging } = props;
-  const transform = `translate3d(${x}px, ${y}px, 0)`;
+  const transform = `translate3d(${x - MARKER_WIDTH / 2}px, ${y - MARKER_WIDTH / 2}px, 0)`;
 
   return {
     transform,
