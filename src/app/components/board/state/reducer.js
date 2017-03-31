@@ -1,5 +1,6 @@
-import { fromJS } from 'immutable';
-import * as types from './action-types';
+import { fromJS, Map }       from 'immutable';
+import * as types            from './action-types';
+import { distanceToSeconds } from '../utils/distance';
 
 const initialState = fromJS({
   roundDuration: 87,
@@ -8,30 +9,33 @@ const initialState = fromJS({
       id: 1,
       x: 300,
       y: 300,
-      time: 87,
-      paths: {
-        2: {
+      time: 80,
+      paths: [
+        {
+          time: 2,
           x1: 300,
           x2: 350,
           y1: 300,
           y2: 350
         },
-        5: {
+        {
+          time: 5,
           x1: 350,
           x2: 450,
           y1: 350,
           y2: 600
         }
-      }
+      ]
     }
   },
-  roundTime: 87
+  roundTime: 80,
+  previewLine: false
 });
 
 export default function reducer(state = initialState, action = {}) {
   switch (action.type) {
   
-  case types.ADD_PLAYER_MARKER:
+  case types.ADD_MARKER:
     {
       const { x, y } = action.data;
       const roundDuration = state.get('roundDuration');
@@ -47,34 +51,76 @@ export default function reducer(state = initialState, action = {}) {
     }
     
   
-  case types.UPDATE_PLAYER_MARKER:
+  case types.UPDATE_MARKER:
     return state.setIn(['players', action.data.id], action.data);
     
   
-  case types.ADD_PATH_NODE:
+  case types.ADD_NODE:
     {
-      const players = state.get('players');
-      const { coords, markerId, duration } = action.data;
-
-      const roundTime     = state.get('roundTime');
-      const roundDuration = state.get('roundDuration');
-      const player        = players.get(markerId);
-      const playerTime    = (player.get('time') || roundDuration) - duration;
+      const markerId = action.data.toString();
+      const players  = state.get('players');
+      const player   = players.get(`${markerId}`);
+      
+      const prevNodeCoords = player.get('paths').last();
+      const previewCoords = state.get('previewLine');
+      
+      const coords = Map({
+        x1: prevNodeCoords.get('x2'),
+        x2: previewCoords.get('x2'),
+        y1: prevNodeCoords.get('y2'),
+        y2: previewCoords.get('y2')
+      });
+      
+      const duration       = distanceToSeconds(coords);
+      const roundTime      = state.get('roundTime');
+      const roundDuration  = state.get('roundDuration');
+      const prevPlayerTime = player.get('time');
+      const playerTime     = parseFloat((prevPlayerTime - duration).toFixed(0));
       
       const mostForwardPlayer = players.find(p => p.get('time') < playerTime);
-      const pathTime = Math.round(roundDuration - playerTime + duration);
+      const pathTime = parseFloat((roundDuration - playerTime).toFixed(0));
       
       let newRoundTime = roundTime;
-      if (mostForwardPlayer && mostForwardPlayer !== player) {
-        newRoundTime = roundTime - duration;
+      if (!mostForwardPlayer) {
+        newRoundTime = parseFloat((roundTime - duration).toFixed(0));
       }
+      
+      const path     = coords.set('time', pathTime);
+      const newPaths = player.get('paths').push(path);
       
       return state.withMutations(newState => {
         newState.set('roundTime', newRoundTime);
         newState.setIn(['players', markerId, 'time'], playerTime);
-        newState.setIn(['players', markerId, 'paths', pathTime], coords);
+        newState.setIn(['players', markerId, 'paths'], newPaths);
       });
     }
+
+
+  case types.SET_PREVIEW_LINE:
+    {
+      const markerId = action.data;
+      const paths    = state.getIn(['players', markerId.toString(), 'paths']);
+      const coords   = paths.last();
+      
+      const x = coords.get('x2');
+      const y = coords.get('y2');
+    
+      const line = Map({ x1: x, x2: x, y1: y, y2: y });
+      return state.set('previewLine', line);
+    }
+    
+
+  case types.UPDATE_PREVIEW_LINE:
+    {
+      const { x, y } = action.data;
+      return state.withMutations(newState => {
+        newState.setIn(['previewLine', 'x2'], x);
+        newState.setIn(['previewLine', 'y2'], y);
+      });
+    }
+    
+  case types.RESET_PREVIEW_LINE:
+    return state.set('previewLine', false);
   
   
   default:

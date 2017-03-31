@@ -1,4 +1,12 @@
-export const ADD_PLAYER_MARKER = 'ADD_PLAYER_MARKER';
-export const UPDATE_PLAYER_MARKER = 'UPDATE_PLAYER_MARKER';
 
-export const ADD_PATH_NODE = 'ADD_PATH_NODE';
+export const ADD_MARKER = 'ADD_MARKER';
+export const ADD_NODE = 'ADD_NODE';
+
+export const UPDATE_MARKER = 'UPDATE_MARKER';
+export const UPDATE_NODE = 'UPDATE_NODE';
+export const UPDATE_PREVIEW_LINE = 'UPDATE_PREVIEW_LINE';
+
+export const REMOVE_NODE = 'REMOVE_NODE';
+
+export const SET_PREVIEW_LINE = 'SET_PREVIEW_LINE';
+export const RESET_PREVIEW_LINE = 'RESET_PREVIEW_LINE';

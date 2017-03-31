@@ -3,13 +3,17 @@ import React, { Component, PropTypes } from 'react';
 import { DropTarget }                  from 'react-dnd';
 import ItemTypes                       from '../utils/ItemTypes';
 import PlayerMarker                    from './PlayerMarker';
+import PreviewLine                     from './PreviewLine';
 import Path                            from './Path';
-import { makeLine, makeSquare }        from '../utils/svgShapes';
 
 import {
-  updatePlayerMarker,
-  addPlayerMarker,
-  addPathNode
+  addMarker,
+  addNode,
+  updateMarker,
+  updateNode,
+  setPreviewLine,
+  updatePreviewLine,
+  resetPreviewLine
 } from '../state/actions';
 
 
@@ -22,7 +26,7 @@ const dropSource = {
     const y = initialY + yOffset;
     
     component.justDropped();
-    props.dispatch(updatePlayerMarker({x, y, id}));
+    props.dispatch(updateMarker({x, y, id}));
   }
 };
 
@@ -34,14 +38,14 @@ export default class Container extends Component {
   
   static propTypes = {
     players:           PropTypes.object.isRequired,
+    previewLine:       PropTypes.oneOfType([PropTypes.bool, PropTypes.object]),
     dispatch:          PropTypes.func.isRequired,
     connectDropTarget: PropTypes.func.isRequired
   }
   
   state = {
-    justDropped: false,
     activeMarkerId: '',
-    activeLine: ''
+    addingMarker: false
   }
   
   
@@ -55,30 +59,49 @@ export default class Container extends Component {
   }
   
   
+  componentWillReceiveProps(nextProps) {
+    if (this.props.players !== nextProps.players) {
+      this.setState({addingMarker: false}, this.setPreviewLine);
+    }
+  }
+  
+  
   justDropped = () => {
     this.setState({justDropped: true});
   }
   
   
   clickHandler = (e) => {
-    const { activeLine } = this.state;
+    console.log('clickHandler');
+    const { previewLine } = this.props;
+    const { activeMarkerId } = this.state;
+    const { x, y } = this.getXYCoords(e);
     
-    if (this.state.justDropped || !e.target.classList.contains('drag-container')) {
-      this.setState({justDropped: false});
+    if (previewLine) {
+      this.addNode(activeMarkerId);
       return;
     }
     
-    if (activeLine) {
-      this.drawPath(e);
+    if (e.target.classList.contains('player-marker')) {
       return;
     }
     
-    const { x: eventX, y: eventY } = this.getXYCoords(e);
-    
-    const x = eventX - 10;
-    const y = eventY - 10;
-    
-    this.props.dispatch(addPlayerMarker(x, y));
+    this.props.dispatch(addMarker(x, y));
+  }
+  
+  
+  addNode = () => {
+    console.log('adding node');
+    const { activeMarkerId } = this.state;
+    this.props.dispatch(addNode(activeMarkerId));
+    this.setState({addingMarker: true});
+  }
+  
+  
+  setPreviewLine = () => {
+    console.log('setPreviewLine');
+    const { activeMarkerId } = this.state;
+    this.props.dispatch(setPreviewLine(activeMarkerId));
   }
   
   
@@ -91,43 +114,26 @@ export default class Container extends Component {
   
   
   markerHandler = (e) => {
-    const id = e.target.dataset.id;
     const { activeMarkerId } = this.state;
+    
+    const id = e.target.dataset.id;
+
     
     if (activeMarkerId !== '') {
       this.setState({activeMarkerId: ''});
-    } else {
-      const elTransform = window.getComputedStyle(e.target, null).getPropertyValue('transform');
-      let values = elTransform.split('(')[1];
-      values = values.split(')')[0];
-      values = values.split(',');
-      
-      const x = values[4];
-      const y = values[5];
-      
-      const line = makeLine();
-      line.setAttribute('x1', x);
-      line.setAttribute('x2', x);
-      line.setAttribute('y1', y);
-      line.setAttribute('y2', y);
-      this.refs.svg.appendChild(line);
-      
-      this.setState({
-        activeMarkerId: parseInt(id),
-        activeLine: line
-      });
+      return;
     }
+    
+    this.setState({activeMarkerId: parseInt(id)}, this.setPreviewLine);
   }
   
   
   moveHandler = (e) => {
-    const { activeLine } = this.state;
+    const { previewLine, dispatch } = this.props;
     
-    if (activeLine) {
+    if (previewLine) {
       const { x, y } = this.getXYCoords(e);
-      
-      activeLine.setAttribute('x2', x);
-      activeLine.setAttribute('y2', y);
+      dispatch(updatePreviewLine({x, y}));
     }
   }
   
@@ -143,60 +149,33 @@ export default class Container extends Component {
   
   
   resetSelections = () => {
-    const { activeLine } = this.state;
+    // TODO: rename this method and stop preview line/active marker
+    const { previewLine, dispatch } = this.props;
     
-    if (activeLine) {
-      activeLine.parentNode.removeChild(activeLine);
-      this.setState({
-        activeMarkerId: '',
-        activeLine: ''
-      });
+    if (previewLine) {
+      dispatch(resetPreviewLine());
     }
+    
+    this.setState({
+      activeMarkerId: '',
+    });
   }
-  
-  
-  drawPath = () => {
-    const { activeLine, activeMarkerId } = this.state;
-    const { dispatch } = this.props;
-
-    
-    const x1 = activeLine.getAttribute('x1');
-    const x2 = activeLine.getAttribute('x2');
-    
-    const y1 = activeLine.getAttribute('y1');
-    const y2 = activeLine.getAttribute('y2');
-    
-    const squareWidth = 10;
-    const square = makeSquare();
-    square.setAttribute('x', x2 - squareWidth / 2);
-    square.setAttribute('y', y2 - squareWidth / 2);
-    this.refs.svg.appendChild(square);
-    
-    const line = makeLine();
-    line.setAttribute('x1', x2);
-    line.setAttribute('x2', x2);
-    line.setAttribute('y1', y2);
-    line.setAttribute('y2', y2);
-    this.refs.svg.appendChild(line);
-    this.setState({activeLine: line});
-
-    dispatch(addPathNode({x1, x2, y1, y2}, activeMarkerId));
-  }
-  
   
   
   render() {
-    const { connectDropTarget, players } = this.props;
+    const { connectDropTarget, players, previewLine } = this.props;
     const { activeMarkerId } = this.state;
     
     const pathNodes = [], playerMarkers = [];
+    
     players.map(p => {
       const id = p.get('id');
-        
       const paths = p.get('paths');
-      paths.map(path => {
+
+      paths.map((path, idx) => {
         pathNodes.push(
           <Path
+            key={`path-${id}-${idx}`}
             x1={path.get('x1')}
             x2={path.get('x2')}
             y1={path.get('y1')}
@@ -223,6 +202,11 @@ export default class Container extends Component {
       );
     });
 
+    let previewNode;
+    if (previewLine) {
+      previewNode = <PreviewLine coords={previewLine} />;
+    }
+
     return connectDropTarget(
       <div
         className="drag-container"
@@ -231,6 +215,7 @@ export default class Container extends Component {
       >
         <svg className="paths" ref="svg">
           {pathNodes}
+          {previewNode}
         </svg>
         {playerMarkers}
       </div>

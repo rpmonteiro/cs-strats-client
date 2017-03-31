@@ -10,20 +10,22 @@ import DragContainer                       from './components/DragContainer';
 export class Board extends PureComponent {
   
   static propTypes = {
-    dispatch: PropTypes.func,
-    players:  PropTypes.object
+    dispatch:    PropTypes.func.isRequired,
+    players:     PropTypes.object.isRequired,
+    previewLine: PropTypes.oneOfType([PropTypes.bool, PropTypes.object])
   }
-
-  state = {
-    
-  }
+  
 
   render() {
-    const { players, dispatch } = this.props;
+    const { players, dispatch, previewLine } = this.props;
     
     return (
       <div className="board">
-        <DragContainer dispatch={dispatch} players={players} />
+        <DragContainer
+          dispatch={dispatch}
+          players={players}
+          previewLine={previewLine}
+        />
         <CustomDragLayer />
         <div className="map"></div>
       </div>
@@ -34,7 +36,8 @@ export class Board extends PureComponent {
 
 const mapStateToProps = (state) => {
   return {
-    players: state.board.get('players')
+    players: state.board.get('players'),
+    previewLine: state.board.get('previewLine')
   };
 };
 
