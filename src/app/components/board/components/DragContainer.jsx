@@ -2,7 +2,7 @@
 import React, { Component, PropTypes } from 'react';
 import { DropTarget }                  from 'react-dnd';
 import ItemTypes                       from '../utils/ItemTypes';
-import PlayerMarker                    from './PlayerMarker';
+import Marker                          from './Marker';
 import PreviewLine                     from './PreviewLine';
 import Path                            from './Path';
 
@@ -19,14 +19,7 @@ import {
 
 const dropSource = {
   drop(props, monitor, component) {
-    const { x: initialX, y: initialY, id } = monitor.getItem();
-    const { x: xOffset, y: yOffset } = monitor.getDifferenceFromInitialOffset();
-
-    const x = initialX + xOffset;
-    const y = initialY + yOffset;
-    
     component.justDropped();
-    props.dispatch(updateMarker({x, y, id}));
   }
 };
 
@@ -45,6 +38,7 @@ export default class Container extends Component {
   
   state = {
     activeMarkerId: '',
+    justDropped: false
   }
   
   
@@ -62,16 +56,16 @@ export default class Container extends Component {
   }
   
   
-  justDropped = () => {
-    this.setState({justDropped: true});
-  }
-  
-  
   clickHandler = (e) => {
     console.log('clickHandler');
     const { previewLine } = this.props;
     const { activeMarkerId } = this.state;
     const { x, y } = this.getXYCoords(e);
+    
+    if (this.state.justDropped || !e.target.classList.contains('drag-container')) {
+      this.setState({justDropped: false});
+      return;
+    }
     
     if (previewLine) {
       this.addNode(activeMarkerId);
@@ -81,8 +75,13 @@ export default class Container extends Component {
     if (e.target.classList.contains('player-marker')) {
       return;
     }
-    
+    console.log('add marker');
     this.props.dispatch(addMarker(x, y));
+  }
+  
+  
+  justDropped = () => {
+    this.setState({justDropped: true});
   }
   
   
@@ -159,7 +158,7 @@ export default class Container extends Component {
   
   
   render() {
-    const { connectDropTarget, players, previewLine } = this.props;
+    const { connectDropTarget, players, previewLine, dispatch } = this.props;
     const { activeMarkerId } = this.state;
     
     const pathNodes = [], playerMarkers = [];
@@ -187,9 +186,10 @@ export default class Container extends Component {
       }
 
       playerMarkers.push(
-        <PlayerMarker
+        <Marker
           clickHandler={this.markerHandler}
           className={className}
+          dispatch={dispatch}
           key={`p-${id}`}
           id={id}
           x={p.get('x')}

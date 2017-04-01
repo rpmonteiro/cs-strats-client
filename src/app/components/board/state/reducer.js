@@ -53,7 +53,19 @@ export default function reducer(state = initialState, action = {}) {
     
   
   case types.UPDATE_MARKER:
-    return state.setIn(['players', action.data.id], action.data);
+    {
+      const { x, y, id } = action.data;
+      const _id = id.toString();
+      
+      console.log('action data', action.data);
+      // const marker = state.players.get(_id);
+      
+      return state.withMutations(newState => {
+        newState.setIn(['players', _id, 'x'], x);
+        newState.setIn(['players', _id, 'y'], y);
+      });
+      // return state.setIn(['players', action.data.id.toString()], action.data);
+    }
     
   // TODO: REFACTOR some pieces of code used multiple times like the get last player's coords
   case types.ADD_NODE:
