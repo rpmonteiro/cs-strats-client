@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from 'react';
-import { updateMarker }                from '../state/actions';
+// import { updateMarker }                from '../state/actions';
 
 const MARKER_WIDTH = 20;
 
@@ -27,6 +27,7 @@ export default class Marker extends Component {
     y: PropTypes.number.isRequired,
   };
 
+  
   render() {
     const { className, id, clickHandler } = this.props;
 

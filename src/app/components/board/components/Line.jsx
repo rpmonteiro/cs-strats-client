@@ -1,7 +1,7 @@
 import React, { PropTypes, PureComponent } from 'react';
 
 
-export default class Path extends PureComponent {
+export default class Line extends PureComponent {
 
   static propTypes = {
     x1: PropTypes.number.isRequired,
