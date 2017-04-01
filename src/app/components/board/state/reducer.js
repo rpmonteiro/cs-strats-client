@@ -32,6 +32,7 @@ const initialState = fromJS({
   previewLine: false
 });
 
+
 export default function reducer(state = initialState, action = {}) {
   switch (action.type) {
   
@@ -45,23 +46,24 @@ export default function reducer(state = initialState, action = {}) {
         x: x,
         y: y,
         time: roundDuration,
-        paths: {}
+        paths: []
       };
-      return state.setIn(['players', id], fromJS(playerObj));
+      return state.setIn(['players', id.toString()], fromJS(playerObj));
     }
     
   
   case types.UPDATE_MARKER:
     return state.setIn(['players', action.data.id], action.data);
     
-  
+  // TODO: REFACTOR some pieces of code used multiple times like the get last player's coords
   case types.ADD_NODE:
     {
       const markerId = action.data.toString();
       const players  = state.get('players');
-      const player   = players.get(`${markerId}`);
+      const player   = players.get(markerId);
       
-      const prevNodeCoords = player.get('paths').last();
+      const prevNodeCoords = player.get('paths').last()
+      || Map({x2: player.get('x'), y2: player.get('y')});
       const previewCoords = state.get('previewLine');
       
       const coords = Map({
@@ -99,9 +101,10 @@ export default function reducer(state = initialState, action = {}) {
   case types.SET_PREVIEW_LINE:
     {
       const markerId = action.data;
-      const paths    = state.getIn(['players', markerId.toString(), 'paths']);
-      const coords   = paths.last();
-      
+      const player   = state.getIn(['players', markerId.toString()]);
+      const paths    = player.get('paths');
+      const coords   = paths.last() || Map({x2: player.get('x'), y2: player.get('y')});
+
       const x = coords.get('x2');
       const y = coords.get('y2');
     
@@ -127,16 +130,3 @@ export default function reducer(state = initialState, action = {}) {
     return state;
   }
 }
-
-// players: {
-//   0: {
-//     0: {
-//       x: 'x',
-//       y: 'y'
-//     },
-//     5: {
-//       x: 'x',
-//       y: 'y'
-//     }
-//   }
-// }

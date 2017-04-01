@@ -45,7 +45,6 @@ export default class Container extends Component {
   
   state = {
     activeMarkerId: '',
-    addingMarker: false
   }
   
   
@@ -59,10 +58,7 @@ export default class Container extends Component {
   }
   
   
-  componentWillReceiveProps(nextProps) {
-    if (this.props.players !== nextProps.players) {
-      this.setState({addingMarker: false}, this.setPreviewLine);
-    }
+  componentWillReceiveProps() {
   }
   
   
@@ -94,7 +90,7 @@ export default class Container extends Component {
     console.log('adding node');
     const { activeMarkerId } = this.state;
     this.props.dispatch(addNode(activeMarkerId));
-    this.setState({addingMarker: true});
+    this.setPreviewLine();
   }
   
   
