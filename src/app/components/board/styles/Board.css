@@ -7,17 +7,9 @@
   position: relative;
 }
 
-.player-marker {
+.marker {
   cursor: pointer;
   background-color: red;
-  position: absolute;
-  height: 20px;
-  width: 20px;
-  border-radius: 20px;
-}
-
-.player-marker-preview {
-  background-color: yellow;
   position: absolute;
   height: 20px;
   width: 20px;
@@ -42,6 +34,6 @@
   z-index: -1;
 }
 
-.player-marker.active {
+.marker.active {
   background-color: white;
 }

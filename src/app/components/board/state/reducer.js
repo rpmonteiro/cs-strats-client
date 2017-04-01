@@ -57,7 +57,7 @@ export default function reducer(state = initialState, action = {}) {
       const { x, y, id } = action.data;
       const _id = id.toString();
       
-      console.log('action data', action.data);
+      // console.log('action data', action.data);
       // const marker = state.players.get(_id);
       
       return state.withMutations(newState => {

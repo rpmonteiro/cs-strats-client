@@ -25,7 +25,8 @@ export class Board extends PureComponent {
   }
     
   state = {
-    activeMarkerId: ''
+    activeMarkerId: '',
+    draggingMarkerId: ''
   }
   
   
@@ -43,22 +44,54 @@ export class Board extends PureComponent {
   }
   
   
+  moveHandler = (e) => {
+    const { draggingMarkerId } = this.state;
+    const { previewLine, dispatch } = this.props;
+    
+    if (draggingMarkerId) {
+      this.dragMarker(e);
+      return;
+    }
+    
+    if (previewLine) {
+      const { x, y } = this.getXYCoords(e);
+      dispatch(updatePreviewLine({x, y}));
+    }
+  }
+  
+  
+  mouseDownHandler = (e) => {
+    console.log('board mouseDownHandler');
+    if (this.targetIsMarker(e)) {
+      this.startMarkerDrag(e);
+      return;
+    }
+  }
+  
+  
   clickHandler = (e) => {
-    console.log('clickHandler');
+    console.log('board clickHandler');
     const { previewLine } = this.props;
-    const { activeMarkerId } = this.state;
+    const { activeMarkerId, draggingMarkerId } = this.state;
     const { x, y } = this.getXYCoords(e);
     
+    if (draggingMarkerId) {
+      this.stopMarkerDrag();
+      return;
+    }
+
     if (previewLine) {
       this.addNode(activeMarkerId);
       return;
     }
     
-    if (e.target.classList.contains('player-marker')) {
-      return;
-    }
     console.log('add marker');
     this.props.dispatch(addMarker(x, y));
+  }
+
+
+  targetIsMarker = (e) => {
+    return e.target.classList.contains('marker');
   }
 
   
@@ -86,11 +119,17 @@ export class Board extends PureComponent {
   
   
   markerHandler = (e) => {
-    const { activeMarkerId } = this.state;
+    e.stopPropagation();
+    console.log('markerHandler');
+    const { activeMarkerId, draggingMarkerId } = this.state;
     
-    const id = e.target.dataset.id;
+    if (draggingMarkerId) {
+      this.stopMarkerDrag();
+      return;
+    }
+    
+    const id = this.getMarkerId(e);
 
-    
     if (activeMarkerId !== '') {
       this.setState({activeMarkerId: ''});
       return;
@@ -100,13 +139,32 @@ export class Board extends PureComponent {
   }
   
   
-  moveHandler = (e) => {
-    const { previewLine, dispatch } = this.props;
-    
-    if (previewLine) {
-      const { x, y } = this.getXYCoords(e);
-      dispatch(updatePreviewLine({x, y}));
-    }
+  startMarkerDrag = (e) => {
+    const id = this.getMarkerId(e);
+    this.setState({draggingMarkerId: id});
+  }
+  
+  
+  dragMarker = (e) => {
+    const { draggingMarkerId: id } = this.state;
+    const { x, y } = this.getXYCoords(e);
+    this.props.dispatch(updateMarker({x, y, id}));
+  }
+  
+  
+  stopMarkerDrag = () => {
+    this.setState({draggingMarkerId: ''});
+  }
+  
+  
+  markerUpHandler = (e) => {
+    console.log('markerUpHandler');
+    e.stopPropagation();
+  }
+  
+  
+  getMarkerId = (e) => {
+    return e.target.dataset.id;
   }
   
   
@@ -157,7 +215,7 @@ export class Board extends PureComponent {
         );
       });
       
-      let className = 'player-marker';
+      let className = 'marker';
       if (activeMarkerId === id) {
         className += ' active';
       }
@@ -165,6 +223,8 @@ export class Board extends PureComponent {
       playerMarkers.push(
         <Marker
           clickHandler={this.markerHandler}
+          onMouseDown={this.markerDownHandler}
+          onMouseUp={this.markerUpHandler}
           className={className}
           dispatch={dispatch}
           key={`p-${id}`}
@@ -184,6 +244,7 @@ export class Board extends PureComponent {
       <div className="board"
         onClick={this.clickHandler}
         onMouseMove={this.moveHandler}
+        onMouseDown={this.mouseDownHandler}
       >
         <svg className="paths" ref="svg">
           {pathNodes}

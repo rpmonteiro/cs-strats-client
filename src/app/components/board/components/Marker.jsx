@@ -5,12 +5,10 @@ const MARKER_WIDTH = 20;
 
 function getStyles(props) {
   const { x, y } = props;
-  const transform = `translate3d(${x - MARKER_WIDTH / 2}px, ${y - MARKER_WIDTH / 2}px, 0)`;
 
   return {
-    transform,
-    position: 'absolute',
-    WebkitTransform: transform,
+    left: x - MARKER_WIDTH / 2 + 'px',
+    top: y - MARKER_WIDTH / 2 + 'px'
     // opacity: isDragging ? 0 : 1,
     // height: isDragging ? 0 : '',
   };
