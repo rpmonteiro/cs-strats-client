@@ -21,7 +21,7 @@ export class Board extends PureComponent {
   static propTypes = {
     dispatch:    PropTypes.func.isRequired,
     players:     PropTypes.object.isRequired,
-    roundTime:   PropTypes.string.isRequired,
+    roundTime:   PropTypes.number.isRequired,
     previewLine: PropTypes.oneOfType([PropTypes.bool, PropTypes.object])
   }
     
@@ -62,15 +62,17 @@ export class Board extends PureComponent {
   
   
   mouseDownHandler = (e) => {
+    e.stopPropagation();
     console.log('board mouseDownHandler');
     if (this.targetIsMarker(e)) {
-      this.startMarkerDrag(e);
+      this.markerDownHandler(e);
       return;
     }
   }
   
   
   clickHandler = (e) => {
+    e.stopPropagation();
     console.log('board clickHandler');
     const { previewLine } = this.props;
     const { activeMarkerId, draggingMarkerId } = this.state;
@@ -121,6 +123,7 @@ export class Board extends PureComponent {
   
   markerHandler = (e) => {
     e.stopPropagation();
+    e.preventDefault();
     console.log('markerHandler');
     const { activeMarkerId, draggingMarkerId } = this.state;
     
@@ -161,6 +164,15 @@ export class Board extends PureComponent {
   markerUpHandler = (e) => {
     console.log('markerUpHandler');
     e.stopPropagation();
+    e.preventDefault();
+  }
+  
+  
+  markerDownHandler = (e) => {
+    console.log('markerDownHandler');
+    e.stopPropagation();
+    e.preventDefault();
+    this.startMarkerDrag(e);
   }
   
   
@@ -224,7 +236,6 @@ export class Board extends PureComponent {
       playerMarkers.push(
         <Marker
           clickHandler={this.markerHandler}
-          onMouseDown={this.markerDownHandler}
           onMouseUp={this.markerUpHandler}
           className={className}
           dispatch={dispatch}
