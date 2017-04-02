@@ -27,7 +27,8 @@ export class Board extends PureComponent {
     
   state = {
     activeMarkerId: '',
-    draggingMarkerId: ''
+    draggingMarkerId: '',
+    mouseDown: false
   }
   
   
@@ -46,11 +47,16 @@ export class Board extends PureComponent {
   
   
   moveHandler = (e) => {
-    const { draggingMarkerId } = this.state;
+    const { draggingMarkerId, mouseDown } = this.state;
     const { previewLine, dispatch } = this.props;
     
     if (draggingMarkerId) {
       this.dragMarker(e);
+      return;
+    }
+    
+    if (this.targetIsMarker(e) && mouseDown) {
+      this.startMarkerDrag(e);
       return;
     }
     
@@ -61,13 +67,13 @@ export class Board extends PureComponent {
   }
   
   
-  mouseDownHandler = (e) => {
-    e.stopPropagation();
-    console.log('board mouseDownHandler');
-    if (this.targetIsMarker(e)) {
-      this.markerDownHandler(e);
-      return;
-    }
+  mouseDownHandler = () => {
+    this.setState({mouseDown: true});
+  }
+  
+  
+  mouseUpHandler = () => {
+    this.setState({mouseDown: false});
   }
   
   
@@ -121,10 +127,9 @@ export class Board extends PureComponent {
   }
   
   
-  markerHandler = (e) => {
-    e.stopPropagation();
-    e.preventDefault();
-    console.log('markerHandler');
+  markerClickHandler = (e) => {
+    e.stopPropagation(); // so it doesnt trigger board click
+    console.log('markerClickHandler');
     const { activeMarkerId, draggingMarkerId } = this.state;
     
     if (draggingMarkerId) {
@@ -144,6 +149,7 @@ export class Board extends PureComponent {
   
   
   startMarkerDrag = (e) => {
+    console.log('startMarkerDrag');
     const id = this.getMarkerId(e);
     this.setState({draggingMarkerId: id});
   }
@@ -157,24 +163,10 @@ export class Board extends PureComponent {
   
   
   stopMarkerDrag = () => {
+    console.log('stop marker drag');
     this.setState({draggingMarkerId: ''});
   }
-  
-  
-  markerUpHandler = (e) => {
-    console.log('markerUpHandler');
-    e.stopPropagation();
-    e.preventDefault();
-  }
-  
-  
-  markerDownHandler = (e) => {
-    console.log('markerDownHandler');
-    e.stopPropagation();
-    e.preventDefault();
-    this.startMarkerDrag(e);
-  }
-  
+
   
   getMarkerId = (e) => {
     return e.target.dataset.id;
@@ -235,8 +227,7 @@ export class Board extends PureComponent {
 
       playerMarkers.push(
         <Marker
-          clickHandler={this.markerHandler}
-          onMouseUp={this.markerUpHandler}
+          clickHandler={this.markerClickHandler}
           className={className}
           dispatch={dispatch}
           key={`p-${id}`}
@@ -259,6 +250,7 @@ export class Board extends PureComponent {
         onClick={this.clickHandler}
         onMouseMove={this.moveHandler}
         onMouseDown={this.mouseDownHandler}
+        onMouseUp={this.mouseUpHandler}
       >
         {currTime}
         <svg className="paths" ref="svg">

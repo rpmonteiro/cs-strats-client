@@ -5,6 +5,16 @@ import { shallowComp, mountComp } from '__tests__/helpers';
 import expect from 'expect';
 import { Board } from '../Board';
 
+import {
+  addMarker,
+  addNode,
+  updateMarker,
+  updateNode,
+  setPreviewLine,
+  updatePreviewLine,
+  resetPreviewLine
+} from '../state/actions';
+
 
 describe('Board', () => {
   
@@ -77,7 +87,45 @@ describe('Board', () => {
       expect(output.state().activeMarkerId).toEqual('');
       
       const event = { target: { dataset: { id: 1 } }, stopPropagation: () => {} };
-      output.find('Marker').first().simulate('click', event);
+      output.instance().markerClickHandler(event);
+      expect(output.state().activeMarkerId).toEqual(1);
+    });
+    
+    
+    it('should remove active marker if click on active marker', () => {
+      const { output } = shallowComp(Board, props);
+      output.setState({activeMarkerId: 2});
+      expect(output.state().activeMarkerId).toEqual(2);
+      
+      const event = { target: { dataset: { id: 1 } }, stopPropagation: () => {} };
+      output.instance().markerClickHandler(event);
+      expect(output.state().activeMarkerId).toEqual('');
+    });
+    
+    
+    it('should stop marker drag if is dragging', () => {
+      const { output } = shallowComp(Board, props);
+      output.setState({draggingMarkerId: 2});
+      expect(output.state().draggingMarkerId).toEqual(2);
+      
+      const event = { target: { dataset: { id: 1 } }, stopPropagation: () => {} };
+      output.instance().markerClickHandler(event);
+      expect(output.state().draggingMarkerId).toEqual('');
+    });
+    
+    
+    it('should dispatch setPreviewLine with markerId if marker becomes active', () => {
+      const spy = expect.spyOn(props, 'dispatch');
+      const { output } = shallowComp(Board, props);
+      expect(output.state().activeMarkerId).toEqual('');
+      
+      const markerId = 1;
+      const event = { target: { dataset: { id: markerId } }, stopPropagation: () => {} };
+      
+      expect(spy).toNotHaveBeenCalled();
+      output.instance().markerClickHandler(event);
+      expect(output.state().activeMarkerId).toEqual(markerId);
+      expect(spy).toHaveBeenCalledWith(setPreviewLine(markerId));
     });
   
   });
