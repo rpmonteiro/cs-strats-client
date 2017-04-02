@@ -74,6 +74,45 @@ describe('Board reducer', () => {
   });
   
   
+  describe('ADD_MARKER', () => {
+  
+    it('should add a new marker', () => {
+      const initialState = reducer();
+      expect(initialState.get('players').size).toEqual(0);
+      
+      const actionData = { x: 500, y: 500 };
+      const state = reducer(initialState, actions.addMarker(actionData));
+      
+      expect(state.get('players').size).toEqual(1);
+      expect(state.getIn(['players', '1']).toJS()).toEqual({
+        id: 1,
+        x: 500,
+        y: 500,
+        time: 87,
+        paths: []
+      });
+    });
+    
+    
+    it('should add a new marker', () => {
+      const initialState = reducer(complexState);
+      expect(initialState.get('players').size).toEqual(3);
+      
+      const actionData = { x: 500, y: 500 };
+      const state = reducer(initialState, actions.addMarker(actionData));
+      expect(state.get('players').size).toEqual(4);
+      expect(state.getIn(['players', '4']).toJS()).toEqual({
+        id: 4,
+        x: 500,
+        y: 500,
+        time: 87,
+        paths: []
+      });
+    });
+  
+  });
+  
+  
   describe('UPDATE_MARKER', () => {
   
     it('should update the marker position', () => {
@@ -171,6 +210,15 @@ describe('Board reducer', () => {
       expect(paths.getIn([0, 'time'])).toEqual(8);
       expect(paths.getIn([1, 'time'])).toEqual(16);
       expect(paths.getIn([2, 'time'])).toEqual(26);
+    });
+  
+  });
+  
+  
+  describe('ADD_NODE', () => {
+  
+    it('should ', () => {
+      
     });
   
   });

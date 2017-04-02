@@ -1,10 +1,10 @@
 import * as types from './action-types';
 
 
-export function addMarker(x, y) {
+export function addMarker(coords) {
   return {
     type: types.ADD_MARKER,
-    data: {x, y}
+    data: coords
   };
 }
 
