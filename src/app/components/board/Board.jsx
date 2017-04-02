@@ -21,6 +21,7 @@ export class Board extends PureComponent {
   static propTypes = {
     dispatch:    PropTypes.func.isRequired,
     players:     PropTypes.object.isRequired,
+    roundTime:   PropTypes.string.isRequired,
     previewLine: PropTypes.oneOfType([PropTypes.bool, PropTypes.object])
   }
     
@@ -86,7 +87,7 @@ export class Board extends PureComponent {
     }
     
     console.log('add marker');
-    this.props.dispatch(addMarker(x, y));
+    this.props.dispatch(addMarker({x, y}));
   }
 
 
@@ -193,7 +194,7 @@ export class Board extends PureComponent {
   
   
   render() {
-    const { players, previewLine, dispatch } = this.props;
+    const { players, previewLine, dispatch, roundTime } = this.props;
     const { activeMarkerId } = this.state;
     
     const pathNodes = [], playerMarkers = [];
@@ -240,12 +241,15 @@ export class Board extends PureComponent {
       previewNode = <PreviewLine coords={previewLine} />;
     }
     
+    const currTime = <div className="round-time">{roundTime}</div>;
+    
     return (
       <div className="board"
         onClick={this.clickHandler}
         onMouseMove={this.moveHandler}
         onMouseDown={this.mouseDownHandler}
       >
+        {currTime}
         <svg className="paths" ref="svg">
           {pathNodes}
           {previewNode}
@@ -261,6 +265,7 @@ export class Board extends PureComponent {
 const mapStateToProps = (state) => {
   return {
     players: state.board.get('players'),
+    roundTime: state.board.get('roundTime'),
     previewLine: state.board.get('previewLine')
   };
 };

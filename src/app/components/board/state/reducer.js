@@ -37,6 +37,14 @@ export default function reducer(state = initialState, action = {}) {
       
       let marker = markers.get(_id);
       const adjPath = marker.getIn(['paths', 0]);
+      
+      if (!adjPath) {
+        return state.withMutations(newState => {
+          newState.setIn(['players', _id, 'x'], x);
+          newState.setIn(['players', _id, 'y'], y);
+        });
+      }
+      
       const newPath = Map({
         time: '',
         x1: x,

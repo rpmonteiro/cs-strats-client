@@ -12,7 +12,12 @@ describe('Board reducer', () => {
   const simpleState = fromJS({
     roundDuration: 87,
     roundTime: 80,
-    previewLine: false,
+    previewLine: {
+      x1: 350,
+      y1: 600,
+      x2: 1000,
+      y2: 1000
+    },
     players: {
       1: {
         id: 1,
@@ -31,7 +36,12 @@ describe('Board reducer', () => {
   const complexState = fromJS({
     roundDuration: 87,
     roundTime: 65,
-    previewLine: false,
+    previewLine: {
+      x1: 450,
+      y1: 600,
+      x2: 650,
+      y2: 750
+    },
     players: {
       1: {
         id: 1,
@@ -211,14 +221,167 @@ describe('Board reducer', () => {
       expect(paths.getIn([1, 'time'])).toEqual(16);
       expect(paths.getIn([2, 'time'])).toEqual(26);
     });
+    
+    
+    it('should update the marker position even if it has no paths yet', () => {
+      const initialState = reducer(complexState);
+      
+      const initPlayer = initialState.getIn(['players', '3']);
+      expect(initPlayer.get('paths').size).toEqual(0);
+      expect(initPlayer.get('time')).toEqual(87);
+      expect(initPlayer.get('x')).toEqual(600);
+      expect(initPlayer.get('y')).toEqual(600);
+      
+      const actionData = { id: 3, x: 350, y: 350 };
+      const state = reducer(initialState, actions.updateMarker(actionData));
+      
+      const player = state.getIn(['players', '3']);
+      expect(player.get('paths').size).toEqual(0);
+      expect(player.get('time')).toEqual(87);
+      expect(player.get('x')).toEqual(350);
+      expect(player.get('y')).toEqual(350);
+    });
   
   });
   
   
   describe('ADD_NODE', () => {
   
-    it('should ', () => {
+    it('should add a node', () => {
+      const initialState = reducer(simpleState);
+      expect(initialState.getIn(['players', '1', 'paths']).size).toEqual(2);
+      expect(initialState.getIn(['previewLine', 'x1'])).toEqual(350);
+      expect(initialState.getIn(['previewLine', 'y1'])).toEqual(600);
+      expect(initialState.getIn(['previewLine', 'x2'])).toEqual(1000);
+      expect(initialState.getIn(['previewLine', 'y2'])).toEqual(1000);
       
+      const actionData = 1;
+      const state = reducer(initialState, actions.addNode(actionData));
+      
+      expect(state.getIn(['players', '1', 'paths']).size).toEqual(3);
+      expect(state.getIn(['players', '1', 'paths']).last().toJS()).toEqual({
+        x1: 450,
+        x2: 1000,
+        y1: 600,
+        y2: 1000,
+        time: 22
+      });
+    });
+    
+    
+    it('should update the roundTime if the player is the furthest into the round', () => {
+      const initialState = reducer(simpleState);
+      expect(initialState.get('roundTime')).toEqual(80);
+      
+      const actionData = 1;
+      const state = reducer(initialState, actions.addNode(actionData));
+      expect(state.get('roundTime')).toEqual(65);
+    });
+    
+    
+    it('should update the player time', () => {
+      const initialState = reducer(simpleState);
+      expect(initialState.getIn(['players', '1', 'time'])).toEqual(80);
+      
+      const actionData = 1;
+      const state = reducer(initialState, actions.addNode(actionData));
+      expect(state.getIn(['players', '1', 'time'])).toEqual(65);
+    });
+    
+    
+    it('should not update the roundTime if player is not the furthest into the round', () => {
+      const initialState = reducer(complexState);
+      expect(initialState.getIn(['players', '1', 'time'])).toEqual(75);
+      expect(initialState.get('roundTime')).toEqual(65);
+      
+      const actionData = 1;
+      const state = reducer(initialState, actions.addNode(actionData));
+      expect(state.getIn(['players', '1', 'time'])).toEqual(69);
+      expect(state.get('roundTime')).toEqual(65);
+    });
+    
+    
+    it('should add the first node of a player by using its original position', () => {
+      const initialState = reducer(complexState);
+      expect(initialState.getIn(['players', '3', 'paths']).size).toEqual(0);
+      
+      const playerInitPos = initialState.getIn(['players', '3']);
+      
+      const actionData = 3;
+      const state = reducer(initialState, actions.addNode(actionData));
+      expect(state.getIn(['players', '3', 'paths']).size).toEqual(1);
+      expect(state.getIn(['players', '3', 'paths']).last().toJS()).toEqual({
+        x1: playerInitPos.get('x'),
+        x2: state.getIn(['previewLine', 'x2']),
+        y1: playerInitPos.get('y'),
+        y2: state.getIn(['previewLine', 'y2']),
+        time: 4
+      });
+    });
+  
+  });
+  
+  
+  describe('SET_PREVIEW_LINE', () => {
+  
+    it('should set the preview line with previous node coords', () => {
+      const initialState = reducer(simpleState);
+      expect(initialState.get('previewLine').toJS()).toEqual({
+        x1: 350, y1: 600, x2: 1000, y2: 1000
+      });
+      
+      const actionData = 1;
+      const state = reducer(initialState, actions.setPreviewLine(actionData));
+      
+      expect(state.get('previewLine').toJS()).toEqual({
+        x1: 450, x2: 450, y1: 600, y2: 600
+      });
+    });
+    
+    
+    it('should set the preview line with initial player coords when no paths exist yet', () => {
+      const initialState = reducer(complexState);
+      expect(initialState.getIn(['players', '3', 'x'])).toEqual(600);
+      expect(initialState.getIn(['players', '3', 'y'])).toEqual(600);
+      
+      const actionData = 3;
+      const state = reducer(initialState, actions.setPreviewLine(actionData));
+      expect(state.get('previewLine').toJS()).toEqual({
+        x1: 600, x2: 600, y1: 600, y2: 600
+      });
+    });
+  
+  });
+  
+  
+  describe('UPDATE_PREVIEW_LINE', () => {
+  
+    it('should update the previewLine coords', () => {
+      const initialState = reducer(simpleState);
+      expect(initialState.get('previewLine').toJS()).toEqual({
+        x1: 350, y1: 600, x2: 1000, y2: 1000
+      });
+      
+      const actionData = { x: 100, y: 100 };
+      const state = reducer(initialState, actions.updatePreviewLine(actionData));
+      expect(state.get('previewLine').toJS()).toEqual({
+        x1: 350, x2: 100, y1: 600, y2: 100
+      });
+    });
+  
+  });
+  
+  
+  describe('RESET_PREVIEW_LINE', () => {
+  
+    it('should set previewLine to false', () => {
+      const initialState = reducer(simpleState);
+      expect(initialState.get('previewLine').toJS()).toEqual({
+        x1: 350, y1: 600, x2: 1000, y2: 1000
+      });
+      
+      const state = reducer(initialState, actions.resetPreviewLine());
+      expect(state.get('previewLine')).toEqual(false);
     });
   
   });
