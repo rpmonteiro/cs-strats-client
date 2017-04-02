@@ -62,3 +62,10 @@ export function resetPreviewLine() {
     type: types.RESET_PREVIEW_LINE
   };
 }
+
+export function removeMarker(markerId) {
+  return {
+    type: types.REMOVE_MARKER,
+    data: markerId
+  };
+}

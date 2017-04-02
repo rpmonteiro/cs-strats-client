@@ -158,8 +158,13 @@ export default function reducer(state = initialState, action = {}) {
       });
     }
     
+    
   case types.RESET_PREVIEW_LINE:
     return state.set('previewLine', false);
+  
+  
+  case types.REMOVE_MARKER:
+    return state.deleteIn(['players', action.data.toString()]);
   
   
   default:

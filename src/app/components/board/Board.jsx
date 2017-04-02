@@ -12,7 +12,8 @@ import {
   updateNode,
   setPreviewLine,
   updatePreviewLine,
-  resetPreviewLine
+  resetPreviewLine,
+  removeMarker
 } from './state/actions';
 
 
@@ -138,6 +139,12 @@ export class Board extends PureComponent {
     }
     
     const id = this.getMarkerId(e);
+    
+    if (e.shiftKey) {
+      this.props.dispatch(removeMarker(id));
+      return;
+    }
+    
 
     if (activeMarkerId !== '') {
       this.setState({activeMarkerId: ''});

@@ -80,7 +80,7 @@ describe('Board', () => {
   });
   
   
-  describe('Marker mouseDownHandler', () => {
+  describe('Marker clickHandler', () => {
   
     it('should set clicked marker to active', () => {
       const { output } = shallowComp(Board, props);
