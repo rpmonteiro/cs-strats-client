@@ -1,4 +1,4 @@
-export function distanceToSeconds(coords) {
+export function coordsToSecs(coords) {
   const x1 = coords.get('x1');
   const x2 = coords.get('x2');
   const y1 = coords.get('y1');

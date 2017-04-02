@@ -1,34 +1,11 @@
-import { fromJS, Map }       from 'immutable';
-import * as types            from './action-types';
-import { distanceToSeconds } from '../utils/distance';
+import { fromJS, Map }  from 'immutable';
+import * as types       from './action-types';
+import { coordsToSecs } from '../utils/distance';
 
 const initialState = fromJS({
   roundDuration: 87,
-  players: {
-    1: {
-      id: 1,
-      x: 300,
-      y: 300,
-      time: 80,
-      paths: [
-        {
-          time: 2,
-          x1: 300,
-          x2: 350,
-          y1: 300,
-          y2: 350
-        },
-        {
-          time: 5,
-          x1: 350,
-          x2: 450,
-          y1: 350,
-          y2: 600
-        }
-      ]
-    }
-  },
-  roundTime: 80,
+  players: {},
+  roundTime: 87,
   previewLine: false
 });
 
@@ -56,13 +33,52 @@ export default function reducer(state = initialState, action = {}) {
     {
       const { x, y, id } = action.data;
       const _id = id.toString();
+      const markers = state.get('players');
       
-      // console.log('action data', action.data);
-      // const marker = state.players.get(_id);
+      let marker = markers.get(_id);
+      const adjPath = marker.getIn(['paths', 0]);
+      const newPath = Map({
+        time: '',
+        x1: x,
+        x2: adjPath.get('x2'),
+        y1: y,
+        y2: adjPath.get('y2')
+      });
+      
+      const prevDuration   = adjPath.get('time');
+      const newDuration    = coordsToSecs(newPath);
+      const durationDiff   = prevDuration - newDuration;
+      const prevMarkerTime = marker.get('time');
+      const newMarkerTime  = prevMarkerTime + durationDiff;
+      
+      const currRoundTime = state.get('roundTime');
+      const mostForwardPlayer = state.get('players').find(p => p.get('time') < newMarkerTime);
+      let newRoundTime = currRoundTime;
+      if (!mostForwardPlayer) {
+        newRoundTime = newMarkerTime;
+      }
+      
+      const newPaths = marker.get('paths').map((p, idx) => {
+        const currTime = p.get('time');
+        const newTime = currTime - durationDiff;
+        if (idx === 0) {
+          return newPath.set('time', newTime);
+        }
+        
+        return p.set('time', newTime);
+      });
+      
+
+      marker = marker.withMutations(m => {
+        m.set('x', x);
+        m.set('y', y);
+        m.set('time', newMarkerTime);
+        m.setIn(['paths'], newPaths);
+      });
       
       return state.withMutations(newState => {
-        newState.setIn(['players', _id, 'x'], x);
-        newState.setIn(['players', _id, 'y'], y);
+        newState.setIn(['players', _id], marker);
+        newState.set('roundTime', newRoundTime);
       });
       // return state.setIn(['players', action.data.id.toString()], action.data);
     }
@@ -85,7 +101,7 @@ export default function reducer(state = initialState, action = {}) {
         y2: previewCoords.get('y2')
       });
       
-      const duration       = distanceToSeconds(coords);
+      const duration       = coordsToSecs(coords);
       const roundTime      = state.get('roundTime');
       const roundDuration  = state.get('roundDuration');
       const prevPlayerTime = player.get('time');
