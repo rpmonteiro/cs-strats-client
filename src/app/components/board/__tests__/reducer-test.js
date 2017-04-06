@@ -18,7 +18,7 @@ describe('Board reducer', () => {
       x2: 1000,
       y2: 1000
     },
-    players: {
+    markers: {
       1: {
         id: 1,
         x: 300,
@@ -42,7 +42,7 @@ describe('Board reducer', () => {
       x2: 650,
       y2: 750
     },
-    players: {
+    markers: {
       1: {
         id: 1,
         x: 300,
@@ -78,7 +78,7 @@ describe('Board reducer', () => {
   it('should return the initial state', () => {
     const initialState = reducer();
     expect(initialState.get('roundDuration')).toEqual(87);
-    expect(initialState.get('players').size).toEqual(0);
+    expect(initialState.get('markers').size).toEqual(0);
     expect(initialState.get('roundTime')).toEqual(87);
     expect(initialState.get('previewLine')).toEqual(false);
   });
@@ -88,13 +88,13 @@ describe('Board reducer', () => {
   
     it('should add a new marker', () => {
       const initialState = reducer();
-      expect(initialState.get('players').size).toEqual(0);
+      expect(initialState.get('markers').size).toEqual(0);
       
       const actionData = { x: 500, y: 500 };
       const state = reducer(initialState, actions.addMarker(actionData));
       
-      expect(state.get('players').size).toEqual(1);
-      expect(state.getIn(['players', '1']).toJS()).toEqual({
+      expect(state.get('markers').size).toEqual(1);
+      expect(state.getIn(['markers', '1']).toJS()).toEqual({
         id: 1,
         x: 500,
         y: 500,
@@ -106,12 +106,12 @@ describe('Board reducer', () => {
     
     it('should add a new marker', () => {
       const initialState = reducer(complexState);
-      expect(initialState.get('players').size).toEqual(3);
+      expect(initialState.get('markers').size).toEqual(3);
       
       const actionData = { x: 500, y: 500 };
       const state = reducer(initialState, actions.addMarker(actionData));
-      expect(state.get('players').size).toEqual(4);
-      expect(state.getIn(['players', '4']).toJS()).toEqual({
+      expect(state.get('markers').size).toEqual(4);
+      expect(state.getIn(['markers', '4']).toJS()).toEqual({
         id: 4,
         x: 500,
         y: 500,
@@ -128,23 +128,23 @@ describe('Board reducer', () => {
     it('should update the marker position', () => {
       const initialState = reducer(simpleState);
       
-      const initPlayer = initialState.getIn(['players', '1']);
-      expect(initPlayer.get('x')).toEqual(300);
-      expect(initPlayer.get('y')).toEqual(300);
+      const initMarker = initialState.getIn(['markers', '1']);
+      expect(initMarker.get('x')).toEqual(300);
+      expect(initMarker.get('y')).toEqual(300);
       
       const actionData = { id: 1, x: 500, y: 500 };
       const state = reducer(initialState, actions.updateMarker(actionData));
 
-      const player = state.getIn(['players', '1']);
-      expect(player.get('x')).toEqual(500);
-      expect(player.get('y')).toEqual(500);
+      const marker = state.getIn(['markers', '1']);
+      expect(marker.get('x')).toEqual(500);
+      expect(marker.get('y')).toEqual(500);
     });
     
     
     it('should update the coordinates and time of adjacent path', () => {
       const initialState = reducer(simpleState);
       
-      const initPath = initialState.getIn(['players', '1', 'paths']);
+      const initPath = initialState.getIn(['markers', '1', 'paths']);
       expect(initPath.getIn([0, 'x1'])).toEqual(300);
       expect(initPath.getIn([0, 'y1'])).toEqual(300);
       expect(initPath.getIn([0, 'time'])).toEqual(2);
@@ -152,55 +152,55 @@ describe('Board reducer', () => {
       const actionData = { id: 1, x: 500, y: 500 };
       const state = reducer(initialState, actions.updateMarker(actionData));
       
-      const path = state.getIn(['players', '1', 'paths']);
+      const path = state.getIn(['markers', '1', 'paths']);
       expect(path.getIn([0, 'x1'])).toEqual(500);
       expect(path.getIn([0, 'y1'])).toEqual(500);
       expect(path.getIn([0, 'time'])).toEqual(5);
     });
     
     
-    it('should update the player roundTime if new coords have different duration', () => {
+    it('should update the marker roundTime if new coords have different duration', () => {
       const initialState = reducer(simpleState);
       
-      const initPlayer = initialState.getIn(['players', '1']);
-      expect(initPlayer.get('time')).toEqual(80);
+      const initMarker = initialState.getIn(['markers', '1']);
+      expect(initMarker.get('time')).toEqual(80);
       
       const actionData = { id: 1, x: 600, y: 600 };
       const state = reducer(initialState, actions.updateMarker(actionData));
       
-      const player = state.getIn(['players', '1']);
-      expect(player.get('time')).toEqual(74);
+      const marker = state.getIn(['markers', '1']);
+      expect(marker.get('time')).toEqual(74);
     });
     
     
-    it('should update the global roundTime if player is the furthest into the round', () => {
+    it('should update the global roundTime if marker is the furthest into the round', () => {
       const initialState = reducer(complexState);
       expect(initialState.get('roundTime')).toEqual(65);
       
-      const initPlayer = initialState.getIn(['players', '2']);
-      expect(initPlayer.get('time')).toEqual(65);
+      const initMarker = initialState.getIn(['markers', '2']);
+      expect(initMarker.get('time')).toEqual(65);
       
       const actionData = { id: 2, x: 1500, y: 1500 };
       const state = reducer(initialState, actions.updateMarker(actionData));
       
-      const player = state.getIn(['players', '2']);
-      expect(player.get('time')).toEqual(31);
+      const marker = state.getIn(['markers', '2']);
+      expect(marker.get('time')).toEqual(31);
       expect(state.get('roundTime')).toEqual(31);
     });
     
     
-    it('should not update roundTime if player is not the furthest into the round', () => {
+    it('should not update roundTime if marker is not the furthest into the round', () => {
       const initialState = reducer(complexState);
       expect(initialState.get('roundTime')).toEqual(65);
       
-      const initPlayer = initialState.getIn(['players', '1']);
-      expect(initPlayer.get('time')).toEqual(75);
+      const initMarker = initialState.getIn(['markers', '1']);
+      expect(initMarker.get('time')).toEqual(75);
       
       const actionData = { id: 2, x: 350, y: 350 };
       const state = reducer(initialState, actions.updateMarker(actionData));
       
-      const player = state.getIn(['players', '2']);
-      expect(player.get('time')).toEqual(67);
+      const marker = state.getIn(['markers', '2']);
+      expect(marker.get('time')).toEqual(67);
       expect(state.get('roundTime')).toEqual(65);
     });
     
@@ -208,7 +208,7 @@ describe('Board reducer', () => {
     it('should update the time of the next paths', () => {
       const initialState = reducer(complexState);
       
-      const initPaths = initialState.getIn(['players', '2', 'paths']);
+      const initPaths = initialState.getIn(['markers', '2', 'paths']);
       expect(initPaths.getIn([0, 'time'])).toEqual(2);
       expect(initPaths.getIn([1, 'time'])).toEqual(10);
       expect(initPaths.getIn([2, 'time'])).toEqual(20);
@@ -216,7 +216,7 @@ describe('Board reducer', () => {
       const actionData = { id: 2, x: 600, y: 600 };
       const state = reducer(initialState, actions.updateMarker(actionData));
       
-      const paths = state.getIn(['players', '2', 'paths']);
+      const paths = state.getIn(['markers', '2', 'paths']);
       expect(paths.getIn([0, 'time'])).toEqual(8);
       expect(paths.getIn([1, 'time'])).toEqual(16);
       expect(paths.getIn([2, 'time'])).toEqual(26);
@@ -226,20 +226,20 @@ describe('Board reducer', () => {
     it('should update the marker position even if it has no paths yet', () => {
       const initialState = reducer(complexState);
       
-      const initPlayer = initialState.getIn(['players', '3']);
-      expect(initPlayer.get('paths').size).toEqual(0);
-      expect(initPlayer.get('time')).toEqual(87);
-      expect(initPlayer.get('x')).toEqual(600);
-      expect(initPlayer.get('y')).toEqual(600);
+      const initMarker = initialState.getIn(['markers', '3']);
+      expect(initMarker.get('paths').size).toEqual(0);
+      expect(initMarker.get('time')).toEqual(87);
+      expect(initMarker.get('x')).toEqual(600);
+      expect(initMarker.get('y')).toEqual(600);
       
       const actionData = { id: 3, x: 350, y: 350 };
       const state = reducer(initialState, actions.updateMarker(actionData));
       
-      const player = state.getIn(['players', '3']);
-      expect(player.get('paths').size).toEqual(0);
-      expect(player.get('time')).toEqual(87);
-      expect(player.get('x')).toEqual(350);
-      expect(player.get('y')).toEqual(350);
+      const marker = state.getIn(['markers', '3']);
+      expect(marker.get('paths').size).toEqual(0);
+      expect(marker.get('time')).toEqual(87);
+      expect(marker.get('x')).toEqual(350);
+      expect(marker.get('y')).toEqual(350);
     });
   
   });
@@ -249,17 +249,17 @@ describe('Board reducer', () => {
   
     it('should add a node', () => {
       const initialState = reducer(simpleState);
-      expect(initialState.getIn(['players', '1', 'paths']).size).toEqual(2);
+      expect(initialState.getIn(['markers', '1', 'paths']).size).toEqual(2);
       expect(initialState.getIn(['previewLine', 'x1'])).toEqual(350);
       expect(initialState.getIn(['previewLine', 'y1'])).toEqual(600);
       expect(initialState.getIn(['previewLine', 'x2'])).toEqual(1000);
       expect(initialState.getIn(['previewLine', 'y2'])).toEqual(1000);
       
       const actionData = 1;
-      const state = reducer(initialState, actions.addNode(actionData));
+      const state = reducer(initialState, actions.addPath(actionData));
       
-      expect(state.getIn(['players', '1', 'paths']).size).toEqual(3);
-      expect(state.getIn(['players', '1', 'paths']).last().toJS()).toEqual({
+      expect(state.getIn(['markers', '1', 'paths']).size).toEqual(3);
+      expect(state.getIn(['markers', '1', 'paths']).last().toJS()).toEqual({
         x1: 450,
         x2: 1000,
         y1: 600,
@@ -269,51 +269,51 @@ describe('Board reducer', () => {
     });
     
     
-    it('should update the roundTime if the player is the furthest into the round', () => {
+    it('should update the roundTime if the marker is the furthest into the round', () => {
       const initialState = reducer(simpleState);
       expect(initialState.get('roundTime')).toEqual(80);
       
       const actionData = 1;
-      const state = reducer(initialState, actions.addNode(actionData));
+      const state = reducer(initialState, actions.addPath(actionData));
       expect(state.get('roundTime')).toEqual(65);
     });
     
     
-    it('should update the player time', () => {
+    it('should update the marker time', () => {
       const initialState = reducer(simpleState);
-      expect(initialState.getIn(['players', '1', 'time'])).toEqual(80);
+      expect(initialState.getIn(['markers', '1', 'time'])).toEqual(80);
       
       const actionData = 1;
-      const state = reducer(initialState, actions.addNode(actionData));
-      expect(state.getIn(['players', '1', 'time'])).toEqual(65);
+      const state = reducer(initialState, actions.addPath(actionData));
+      expect(state.getIn(['markers', '1', 'time'])).toEqual(65);
     });
     
     
-    it('should not update the roundTime if player is not the furthest into the round', () => {
+    it('should not update the roundTime if marker is not the furthest into the round', () => {
       const initialState = reducer(complexState);
-      expect(initialState.getIn(['players', '1', 'time'])).toEqual(75);
+      expect(initialState.getIn(['markers', '1', 'time'])).toEqual(75);
       expect(initialState.get('roundTime')).toEqual(65);
       
       const actionData = 1;
-      const state = reducer(initialState, actions.addNode(actionData));
-      expect(state.getIn(['players', '1', 'time'])).toEqual(69);
+      const state = reducer(initialState, actions.addPath(actionData));
+      expect(state.getIn(['markers', '1', 'time'])).toEqual(69);
       expect(state.get('roundTime')).toEqual(65);
     });
     
     
-    it('should add the first node of a player by using its original position', () => {
+    it('should add the first node of a marker by using its original position', () => {
       const initialState = reducer(complexState);
-      expect(initialState.getIn(['players', '3', 'paths']).size).toEqual(0);
+      expect(initialState.getIn(['markers', '3', 'paths']).size).toEqual(0);
       
-      const playerInitPos = initialState.getIn(['players', '3']);
+      const markerInitPos = initialState.getIn(['markers', '3']);
       
       const actionData = 3;
-      const state = reducer(initialState, actions.addNode(actionData));
-      expect(state.getIn(['players', '3', 'paths']).size).toEqual(1);
-      expect(state.getIn(['players', '3', 'paths']).last().toJS()).toEqual({
-        x1: playerInitPos.get('x'),
+      const state = reducer(initialState, actions.addPath(actionData));
+      expect(state.getIn(['markers', '3', 'paths']).size).toEqual(1);
+      expect(state.getIn(['markers', '3', 'paths']).last().toJS()).toEqual({
+        x1: markerInitPos.get('x'),
         x2: state.getIn(['previewLine', 'x2']),
-        y1: playerInitPos.get('y'),
+        y1: markerInitPos.get('y'),
         y2: state.getIn(['previewLine', 'y2']),
         time: 4
       });
@@ -339,10 +339,10 @@ describe('Board reducer', () => {
     });
     
     
-    it('should set the preview line with initial player coords when no paths exist yet', () => {
+    it('should set the preview line with initial marker coords when no paths exist yet', () => {
       const initialState = reducer(complexState);
-      expect(initialState.getIn(['players', '3', 'x'])).toEqual(600);
-      expect(initialState.getIn(['players', '3', 'y'])).toEqual(600);
+      expect(initialState.getIn(['markers', '3', 'x'])).toEqual(600);
+      expect(initialState.getIn(['markers', '3', 'y'])).toEqual(600);
       
       const actionData = 3;
       const state = reducer(initialState, actions.setPreviewLine(actionData));

@@ -7,7 +7,7 @@ import { Board } from '../Board';
 
 import {
   addMarker,
-  addNode,
+  addPath,
   updateMarker,
   updateNode,
   setPreviewLine,
@@ -29,7 +29,7 @@ describe('Board', () => {
         y1: 500,
         y2: 800
       }),
-      players: fromJS({
+      markers: fromJS({
         1: {
           id: 1,
           x: 400,
@@ -73,8 +73,8 @@ describe('Board', () => {
   });
   
   
-  it('should render a marker per player', () => {
-    expect(props.players.size).toEqual(2);
+  it('should render a marker per marker', () => {
+    expect(props.markers.size).toEqual(2);
     const { output } = shallowComp(Board, props);
     expect(output.find('Marker').length).toEqual(2);
   });

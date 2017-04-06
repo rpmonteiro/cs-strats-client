@@ -21,7 +21,7 @@ export class Board extends PureComponent {
   
   static propTypes = {
     dispatch:    PropTypes.func.isRequired,
-    players:     PropTypes.object.isRequired,
+    markers:     PropTypes.object.isRequired,
     roundTime:   PropTypes.number.isRequired,
     previewLine: PropTypes.oneOfType([PropTypes.bool, PropTypes.object])
   }
@@ -159,14 +159,14 @@ export class Board extends PureComponent {
   
   
   getXYCoords = (e) => {
-    let target = e.target.parentNode;
-    if (!target.classList.contains('board')) {
-      target = e.target.parentNode.parentNode;
+    let boardEl = e.target.parentNode;
+    if (!boardEl.classList.contains('board')) {
+      boardEl = e.target.parentNode.parentNode;
     }
     
     return {
-      x: e.clientX - target.parentNode.offsetLeft,
-      y: e.clientY - target.parentNode.offsetTop
+      x: e.clientX - boardEl.parentNode.offsetLeft,
+      y: e.clientY - boardEl.parentNode.offsetTop
     };
   }
   
@@ -246,17 +246,17 @@ export class Board extends PureComponent {
   
   
   render() {
-    const { players, previewLine, dispatch, roundTime } = this.props;
+    const { markers, previewLine, dispatch, roundTime } = this.props;
     const { activeMarkerId } = this.state;
     
-    const paths = [], playerMarkers = [];
+    const pathEls = [], markerEls = [];
     
-    players.map(p => {
+    markers.map(p => {
       const id = p.get('id');
-      const paths = p.get('paths');
+      const markerPaths = p.get('paths');
 
-      paths.map((path, idx) => {
-        paths.push(
+      markerPaths.map((path, idx) => {
+        pathEls.push(
           <Line
             key={`path-${id}-${idx}`}
             x1={path.get('x1')}
@@ -276,7 +276,7 @@ export class Board extends PureComponent {
         className += ' active';
       }
 
-      playerMarkers.push(
+      markerEls.push(
         <Marker
           clickHandler={this.markerClickHandler}
           className={className}
@@ -305,10 +305,10 @@ export class Board extends PureComponent {
       >
         {currTime}
         <svg className="paths" ref="svg">
-          {paths}
+          {pathEls}
           {previewPath}
         </svg>
-        {playerMarkers}
+        {markerEls}
         <div className="map"></div>
       </div>
     );
@@ -318,7 +318,7 @@ export class Board extends PureComponent {
 
 const mapStateToProps = (state) => {
   return {
-    players: state.board.get('players'),
+    markers: state.board.get('markers'),
     roundTime: state.board.get('roundTime'),
     previewLine: state.board.get('previewLine')
   };
