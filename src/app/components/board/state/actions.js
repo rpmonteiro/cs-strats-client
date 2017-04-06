@@ -9,9 +9,9 @@ export function addMarker(coords) {
 }
 
 
-export function addNode(markerId) {
+export function addPath(markerId) {
   return {
-    type: types.ADD_NODE,
+    type: types.ADD_PATH,
     data: markerId
   };
 }
@@ -41,17 +41,17 @@ export function updatePreviewLine({x, y}) {
 }
 
 
-export function updateNode(data) {
+export function updatePath(data) {
   return {
-    type: types.UPDATE_NODE,
+    type: types.UPDATE_PATH,
     data: data
   };
 }
 
 
-export function removeNode(data) {
+export function removePath(data) {
   return {
-    type: types.REMOVE_NODE,
+    type: types.REMOVE_PATH,
     data: data
   };
 }

@@ -8,7 +8,9 @@ export default class Line extends PureComponent {
     x2: PropTypes.number.isRequired,
     y1: PropTypes.number.isRequired,
     y2: PropTypes.number.isRequired,
-    markerId: PropTypes.number.isRequired
+    markerId: PropTypes.number.isRequired,
+    clickHandler: PropTypes.func.isRequired,
+    mouseDownHandler: PropTypes.func.isRequired
   }
   
   squareWidth = 10;
@@ -26,7 +28,7 @@ export default class Line extends PureComponent {
     const { x1, x2, y1, y2 } = this.props;
     
     return (
-      <svg>
+      <svg className="path">
         <line
           x1={x1}
           x2={x2}
@@ -36,6 +38,7 @@ export default class Line extends PureComponent {
           strokeWidth={3}
         />
         <rect
+          className="path-node"
           fill="yellow"
           width="10"
           height="10"

@@ -7,9 +7,9 @@ import Line                                from './components/Line';
 
 import {
   addMarker,
-  addNode,
+  addPath,
   updateMarker,
-  updateNode,
+  updatePath,
   setPreviewLine,
   updatePreviewLine,
   resetPreviewLine,
@@ -48,8 +48,13 @@ export class Board extends PureComponent {
   
   
   moveHandler = (e) => {
-    const { draggingMarkerId, mouseDown } = this.state;
+    const { draggingMarkerId, mouseDown, draggingPath } = this.state;
     const { previewLine, dispatch } = this.props;
+    
+    if (draggingPath) {
+      this.dragPath(e);
+      return;
+    }
     
     if (draggingMarkerId) {
       this.dragMarker(e);
@@ -63,7 +68,10 @@ export class Board extends PureComponent {
     
     if (previewLine) {
       const { x, y } = this.getXYCoords(e);
-      dispatch(updatePreviewLine({x, y}));
+      if (x && y) {
+        dispatch(updatePreviewLine({x, y}));
+      }
+      console.log(!!e, x, y);
     }
   }
   
@@ -82,8 +90,13 @@ export class Board extends PureComponent {
     e.stopPropagation();
     console.log('board clickHandler');
     const { previewLine } = this.props;
-    const { activeMarkerId, draggingMarkerId } = this.state;
+    const { activeMarkerId, draggingMarkerId, draggingPath } = this.state;
     const { x, y } = this.getXYCoords(e);
+    
+    if (draggingPath) {
+      this.stopPathDrag();
+      return;
+    }
     
     if (draggingMarkerId) {
       this.stopMarkerDrag();
@@ -91,7 +104,7 @@ export class Board extends PureComponent {
     }
 
     if (previewLine) {
-      this.addNode(activeMarkerId);
+      this.addPath(activeMarkerId);
       return;
     }
     
@@ -105,25 +118,55 @@ export class Board extends PureComponent {
   }
 
   
-  addNode = () => {
-    console.log('adding node');
+  addPath = () => {
+    console.log('adding path');
     const { activeMarkerId } = this.state;
-    this.props.dispatch(addNode(activeMarkerId));
+    this.props.dispatch(addPath(activeMarkerId));
     this.setPreviewLine();
   }
   
   
+  pathDrag = (e) => {
+    console.log('pathDrag');
+    const { draggingPath: { pathIdx, markerId } } = this.state;
+    const { x, y } = this.getXYCoords(e);
+    this.props.dispatch(updatePath({pathIdx, markerId, x, y}));
+  }
+  
+  
+  stopPathDrag = () => {
+    console.log('stopPathDrag');
+    this.setState({draggingPath: false});
+  }
+  
+  
+  pathClickHandler = () => {
+    console.log('pathClickHandler');
+  }
+  
+  
+  pathDownHandler = (e) => {
+    console.log('pathDownHandler');
+    const { pathIdx, markerId } = e.target.dataset;
+    this.setState({draggingPath: {pathIdx, markerId}});
+  }
+  
+  
   setPreviewLine = () => {
-    console.log('setPreviewLine');
     const { activeMarkerId } = this.state;
     this.props.dispatch(setPreviewLine(activeMarkerId));
   }
   
   
   getXYCoords = (e) => {
+    let target = e.target.parentNode;
+    if (!target.classList.contains('board')) {
+      target = e.target.parentNode.parentNode;
+    }
+    
     return {
-      x: e.clientX - e.target.parentNode.offsetLeft,
-      y: e.clientY - e.target.parentNode.offsetTop
+      x: e.clientX - target.parentNode.offsetLeft,
+      y: e.clientY - target.parentNode.offsetTop
     };
   }
   
@@ -154,7 +197,7 @@ export class Board extends PureComponent {
     this.setState({activeMarkerId: parseInt(id)}, this.setPreviewLine);
   }
   
-  
+
   startMarkerDrag = (e) => {
     console.log('startMarkerDrag');
     const id = this.getMarkerId(e);
@@ -198,9 +241,7 @@ export class Board extends PureComponent {
       dispatch(resetPreviewLine());
     }
     
-    this.setState({
-      activeMarkerId: '',
-    });
+    this.setState({activeMarkerId: ''});
   }
   
   
@@ -208,20 +249,23 @@ export class Board extends PureComponent {
     const { players, previewLine, dispatch, roundTime } = this.props;
     const { activeMarkerId } = this.state;
     
-    const pathNodes = [], playerMarkers = [];
+    const paths = [], playerMarkers = [];
     
     players.map(p => {
       const id = p.get('id');
       const paths = p.get('paths');
 
       paths.map((path, idx) => {
-        pathNodes.push(
+        paths.push(
           <Line
             key={`path-${id}-${idx}`}
             x1={path.get('x1')}
             x2={path.get('x2')}
             y1={path.get('y1')}
             y2={path.get('y2')}
+            idx={idx}
+            clickHandler={this.pathClickHandler}
+            mouseDownHandler={this.pathDownHandler}
             markerId={id}
           />
         );
@@ -245,9 +289,9 @@ export class Board extends PureComponent {
       );
     });
 
-    let previewNode;
+    let previewPath;
     if (previewLine) {
-      previewNode = <PreviewLine coords={previewLine} />;
+      previewPath = <PreviewLine coords={previewLine} />;
     }
     
     const currTime = <div className="round-time">{roundTime}</div>;
@@ -261,8 +305,8 @@ export class Board extends PureComponent {
       >
         {currTime}
         <svg className="paths" ref="svg">
-          {pathNodes}
-          {previewNode}
+          {paths}
+          {previewPath}
         </svg>
         {playerMarkers}
         <div className="map"></div>

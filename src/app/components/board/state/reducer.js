@@ -92,7 +92,7 @@ export default function reducer(state = initialState, action = {}) {
     }
     
   // TODO: REFACTOR some pieces of code used multiple times like the get last player's coords
-  case types.ADD_NODE:
+  case types.ADD_PATH:
     {
       const markerId = action.data.toString();
       const players  = state.get('players');
@@ -132,6 +132,14 @@ export default function reducer(state = initialState, action = {}) {
         newState.setIn(['players', markerId, 'paths'], newPaths);
       });
     }
+    
+    
+  case types.UPDATE_PATH:
+    {
+      const { markerId, pathIdx, x, y } = action.data;
+      
+      return state;
+    }
 
 
   case types.SET_PREVIEW_LINE:
@@ -164,7 +172,10 @@ export default function reducer(state = initialState, action = {}) {
   
   
   case types.REMOVE_MARKER:
-    return state.deleteIn(['players', action.data.toString()]);
+    {
+      // TODO: if deleted player was the most forward one, reset the roundTime!!
+      return state.deleteIn(['players', action.data.toString()]);
+    }
   
   
   default:
