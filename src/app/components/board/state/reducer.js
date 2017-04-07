@@ -125,7 +125,7 @@ export default function reducer(state = initialState, action = {}) {
       
       const path     = coords.set('time', pathTime);
       const newPaths = marker.get('paths').push(path);
-      console.log('add path reducer', newPaths);
+
       return state.withMutations(newState => {
         newState.set('roundTime', newRoundTime);
         newState.setIn(['markers', markerId, 'time'], markerTime);
@@ -137,8 +137,75 @@ export default function reducer(state = initialState, action = {}) {
   case types.UPDATE_PATH:
     {
       const { markerId, pathIdx, x, y } = action.data;
+
+      const markers   = state.get('markers');
+      const marker    = markers.get(markerId);
+      const paths     = marker.get('paths');
+      const path      = paths.get(pathIdx);
+      const firstPath = pathIdx === 0;
+      const lastPath  = pathIdx === paths.size - 1;
+      let prevPath = firstPath ? '' : paths.get(pathIdx - 1);
+      let nextPath = lastPath ? '' : paths.get(pathIdx + 1);
       
-      return state;
+      let x1, y1, x2, y2;
+      if (firstPath) {
+        x1 = marker.get('x');
+        y1 = marker.get('y');
+        x2 = x,
+        y2 = y;
+      } else if (lastPath) {
+        x1 = path.get('x1');
+        y1 = path.get('y1');
+        x2 = x;
+        y2 = y;
+      } else {
+        x1 = path.get('x2');
+        y1 = path.get('y2');
+        x2 = x;
+        y2 = y;
+      }
+
+      const coords = Map({ x1, y1, x2, y2});
+      let newPath  = path.merge(coords);
+      const prevPathTime    = (prevPath && prevPath.get('time')) || 0;
+      const newPathDuration = coordsToSecs(coords);
+      const newPathTime     = prevPathTime + newPathDuration;
+      
+      newPath = newPath.set('time', newPathTime);
+      
+      prevPath = prevPath && prevPath.merge(Map({
+        x2: x,
+        y2: y
+      }));
+
+      const newNextPathTime = newPathTime + newPathDuration;
+      nextPath = nextPath && nextPath.merge(Map({
+        time: newNextPathTime,
+        x1: x,
+        y1: y
+      }));
+      
+      const prevDuration  = path.get('time') - prevPathTime;
+      const durationDiff  = prevDuration - newPathDuration;
+      const markerTime    = marker.get('time');
+      const newMarkerTime = markerTime - durationDiff;
+      
+      const roundTime  = state.get('roundTime');
+      let newRoundTime = roundTime;
+      
+      const mostForwardMarker = markers.find(p => p.get('time') < markerTime);
+      if (!mostForwardMarker) {
+        newRoundTime = parseFloat((roundTime - durationDiff).toFixed(0));
+      }
+      
+      const key = ['markers', markerId, 'paths'];
+      return state.withMutations(newState => {
+        newState.set('roundTime', newRoundTime);
+        newState.setIn(['markers', markerId, 'time'], newMarkerTime);
+        newState.setIn([...key, pathIdx], newPath);
+        prevPath && newState.setIn([...key, pathIdx - 1], prevPath);
+        nextPath && newState.setIn([...key, pathIdx + 1], nextPath);
+      });
     }
 
 

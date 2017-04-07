@@ -386,5 +386,161 @@ describe('Board reducer', () => {
   
   });
   
+  // TODO: fix paths disappearing!
+  describe('UPDATE_PATH', () => {
+    
+    const initialState = reducer(complexState);
+    function makeSetup(markerId, pathIdx, actionData) {
+      const state = reducer(initialState, actions.updatePath(actionData));
+      const initPaths = initialState.getIn(['markers', markerId, 'paths']);
+      const paths = state.getIn(['markers', markerId, 'paths']);
+      
+      return {
+        initPath:     initialState.getIn(['markers', markerId, 'paths', pathIdx]),
+        initMarker:   initialState.getIn(['markers', markerId]),
+        initPrevPath: initPaths.get(pathIdx - 1),
+        initNextPath: initPaths.get(pathIdx + 1),
+        path:         state.getIn(['markers', markerId, 'paths', pathIdx]),
+        marker:       state.getIn(['markers', markerId]),
+        prevPath:     paths.get(pathIdx - 1),
+        nextPath:     paths.get(pathIdx + 1),
+        state,
+        initialState
+      };
+    }
+    
+    
+    describe('path with adjacent paths', () => {
+    
+      const markerId = '2';
+      const pathIdx = 1;
+      const actionData = { markerId, pathIdx, x: 500, y: 500 };
+      
+      it('should update its own coords and time', () => {
+        const { initPath, path } = makeSetup(markerId, pathIdx, actionData);
+
+        const expectedInitPath = { time: 10, x1: 300, x2: 350, y1: 300, y2: 350 };
+        expect(initPath.toJS()).toEqual(expectedInitPath);
+        
+        const expectedPath = {
+          time: 7,
+          x1: path.get('x1'),
+          x2: actionData.x,
+          y1: path.get('y1'),
+          y2: actionData.y
+        };
+        expect(path.toJS()).toEqual(expectedPath);
+      });
+      
+      
+      it('should update the coords of the prev path', () => {
+        const { initPrevPath, prevPath } = makeSetup(markerId, pathIdx, actionData);
+        const expectedInitPrevPath = { time: 2, x1: 300, x2: 350, y1: 300, y2: 350 };
+        expect(initPrevPath.toJS()).toEqual(expectedInitPrevPath);
+
+        const expectedPrevPath = { time: 2, x1: 300, x2: actionData.x, y1: 300, y2: actionData.y };
+        expect(prevPath.toJS()).toEqual(expectedPrevPath);
+      });
+      
+      
+      it('should update the coords and time of the next path', () => {
+        const { initNextPath, nextPath } = makeSetup(markerId, pathIdx, actionData);
+      
+        const expectedInitPrevPath = { time: 20, x1: 350, x2: 450, y1: 350, y2: 600 };
+        expect(initNextPath.toJS()).toEqual(expectedInitPrevPath);
+      
+        const expectedNextPath = { time: 12, x1: actionData.x, x2: 450, y1: actionData.y, y2: 600 };
+        expect(nextPath.toJS()).toEqual(expectedNextPath);
+      });
+      
+      
+      it('should update the marker time', () => {
+        const { initMarker, marker } = makeSetup(markerId, pathIdx, actionData);
+        expect(initMarker.get('time')).toEqual(65);
+        expect(marker.get('time')).toEqual(62);
+      });
+      
+      
+      it('should update the global round time if most forward marker', () => {
+        const { state, initialState } = makeSetup(markerId, pathIdx, actionData);
+        expect(initialState.get('roundTime')).toEqual(65);
+        expect(state.get('roundTime')).toEqual(62);
+      });
+
+    });
+    
+    
+    describe('update last path', () => {
+      
+      const markerId = '1';
+      const pathIdx = 1;
+      const actionData = { markerId, pathIdx, x: 200, y: 200 };
+    
+      it('should not update the global round time if not most forward marker ', () => {
+        const { initialState, state } = makeSetup(markerId, pathIdx, actionData);
+        
+        expect(initialState.get('roundTime')).toEqual(65);
+        expect(state.get('roundTime')).toEqual(65);
+      });
+      
+      
+      it('should update the path coords', () => {
+        const { initPath, path } = makeSetup(markerId, pathIdx, actionData);
+      
+        const expectedInitPath = { time: 10, x1: 350, x2: 450, y1: 350, y2: 600 };
+        expect(initPath.toJS()).toEqual(expectedInitPath);
+      
+        const expectedPath = {
+          time: 7,
+          x1: path.get('x1'),
+          y1: path.get('y1'),
+          x2: actionData.x,
+          y2: actionData.y
+        };
+        expect(path.toJS()).toEqual(expectedPath);
+      });
+    });
+    
+    
+    describe('update first path', () => {
+      
+      const markerId = '2';
+      const pathIdx = 0;
+      const actionData = { markerId, pathIdx, x: 700, y: 700 };
+    
+      it('should update the path coords and time', () => {
+        const { initPath, path, marker } = makeSetup(markerId, pathIdx, actionData);
+      
+        const expectedInitPath = { time: 2, x1: 300, x2: 350, y1: 300, y2: 350 };
+        expect(initPath.toJS()).toEqual(expectedInitPath);
+      
+        const expectedPath = {
+          time: 6,
+          x1: marker.get('x'),
+          y1: marker.get('y'),
+          x2: actionData.x,
+          y2: actionData.y
+        };
+        
+        expect(path.toJS()).toEqual(expectedPath);
+      });
+      
+      
+      it('should update the nextPath coords and time', () => {
+        const { initNextPath, nextPath } = makeSetup(markerId, pathIdx, actionData);
+      
+        const expectedInitNextPath = { time: 10, x1: 300, x2: 350, y1: 300, y2: 350 };
+        expect(initNextPath.toJS()).toEqual(expectedInitNextPath);
+      
+        const expectedNextPath = { time: 12, x1: actionData.x, x2: 350, y1: actionData.y, y2: 350 };
+        expect(nextPath.toJS()).toEqual(expectedNextPath);
+      });
+    
+    });
+    
+    
+  
+  });
+  
   
 });

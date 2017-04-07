@@ -68,10 +68,7 @@ export class Board extends PureComponent {
     
     if (previewLine) {
       const { x, y } = this.getXYCoords(e);
-      if (x && y) {
-        dispatch(updatePreviewLine({x, y}));
-      }
-      console.log(!!e, x, y);
+      dispatch(updatePreviewLine({x, y}));
     }
   }
   
@@ -126,8 +123,8 @@ export class Board extends PureComponent {
   }
   
   
-  pathDrag = (e) => {
-    console.log('pathDrag');
+  dragPath = (e) => {
+    console.log('dragPath');
     const { draggingPath: { pathIdx, markerId } } = this.state;
     const { x, y } = this.getXYCoords(e);
     this.props.dispatch(updatePath({pathIdx, markerId, x, y}));
@@ -148,7 +145,9 @@ export class Board extends PureComponent {
   pathDownHandler = (e) => {
     console.log('pathDownHandler');
     const { pathIdx, markerId } = e.target.dataset;
-    this.setState({draggingPath: {pathIdx, markerId}});
+    const data = { pathIdx: parseInt(pathIdx), markerId };
+    console.log('data', data);
+    this.setState({draggingPath: data});
   }
   
   
@@ -234,7 +233,7 @@ export class Board extends PureComponent {
   
   
   resetSelections = () => {
-    // TODO: rename this method and stop preview line/active marker
+    // TODO: rename this method?
     const { previewLine, dispatch } = this.props;
     
     if (previewLine) {
@@ -254,7 +253,7 @@ export class Board extends PureComponent {
     markers.map(p => {
       const id = p.get('id');
       const markerPaths = p.get('paths');
-
+      
       markerPaths.map((path, idx) => {
         pathEls.push(
           <Line

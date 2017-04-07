@@ -8,24 +8,16 @@ export default class Line extends PureComponent {
     x2: PropTypes.number.isRequired,
     y1: PropTypes.number.isRequired,
     y2: PropTypes.number.isRequired,
+    idx: PropTypes.number.isRequired,
     markerId: PropTypes.number.isRequired,
     clickHandler: PropTypes.func.isRequired,
     mouseDownHandler: PropTypes.func.isRequired
   }
   
   squareWidth = 10;
-  
-  state = {
-    
-  }
-  
-  componentWillMount() {
-    
-  }
-  
 
   render() {
-    const { x1, x2, y1, y2 } = this.props;
+    const { x1, x2, y1, y2, markerId, idx, clickHandler, mouseDownHandler } = this.props;
     
     return (
       <svg className="path">
@@ -38,6 +30,10 @@ export default class Line extends PureComponent {
           strokeWidth={3}
         />
         <rect
+          onClick={clickHandler}
+          onMouseDown={mouseDownHandler}
+          data-markerId={markerId}
+          data-pathIdx={idx}
           className="path-node"
           fill="yellow"
           width="10"
