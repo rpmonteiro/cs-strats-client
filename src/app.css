@@ -1,3 +1,7 @@
+@import './app/components/board/board';
+@import './app/views/editor/editor';
+@import './app/views/app/app';
+
 html {
   height: 100%;
   width: 100%;
@@ -7,27 +11,12 @@ body {
   background-color: #000;
 }
 
-.player-marker {
-  cursor: pointer;
-  background-color: red;
+#root {
   position: absolute;
-  height: 20px;
-  width: 20px;
-  border-radius: 20px;
-}
-
-.main-container img {
-  user-select: none;
-}
-
-.main-container svg {
-  position: absolute;
-  height: 100%;
-  width: 100%;
-  pointer-events: none;
-}
-
-
-.player-marker.active {
-  background-color: white;
+  right: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
 }

@@ -1,5 +1,16 @@
 {
   "plugins": [
+    [
+      "module-resolver", {
+        "alias": {
+          "views":      "./src/app/views",
+          "components": "./src/app/components",
+          "images":     "./src/images",
+          "__tests__":  "./src/__tests__"
+        }
+      }
+    ],
+    "transform-decorators-legacy",
     "transform-runtime"
   ],
   "presets": [
