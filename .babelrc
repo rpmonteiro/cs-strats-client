@@ -3,9 +3,10 @@
     [
       "module-resolver", {
         "alias": {
-          "views": "./src/app/views",
+          "views":      "./src/app/views",
           "components": "./src/app/components",
-          "images": "./src/images"
+          "images":     "./src/images",
+          "__tests__":  "./src/__tests__"
         }
       }
     ],

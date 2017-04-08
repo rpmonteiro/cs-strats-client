@@ -1,0 +1,7 @@
+.path-node {
+  cursor: pointer;
+}
+
+.path-node:hover {
+  fill: #FFF;
+}
