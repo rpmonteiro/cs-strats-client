@@ -417,29 +417,19 @@ describe('Board reducer', () => {
       const actionData = { markerId, pathIdx, x: 500, y: 500 };
       
       it('should update its own coords and time', () => {
-        const { initPath, path } = makeSetup(markerId, pathIdx, actionData);
+        const { initPath, path, prevPath } = makeSetup(markerId, pathIdx, actionData);
 
         const expectedInitPath = { time: 10, x1: 300, x2: 350, y1: 300, y2: 350 };
         expect(initPath.toJS()).toEqual(expectedInitPath);
         
         const expectedPath = {
           time: 7,
-          x1: path.get('x1'),
+          x1: prevPath.get('x2'),
           x2: actionData.x,
-          y1: path.get('y1'),
+          y1: prevPath.get('y2'),
           y2: actionData.y
         };
         expect(path.toJS()).toEqual(expectedPath);
-      });
-      
-      
-      it('should update the coords of the prev path', () => {
-        const { initPrevPath, prevPath } = makeSetup(markerId, pathIdx, actionData);
-        const expectedInitPrevPath = { time: 2, x1: 300, x2: 350, y1: 300, y2: 350 };
-        expect(initPrevPath.toJS()).toEqual(expectedInitPrevPath);
-
-        const expectedPrevPath = { time: 2, x1: 300, x2: actionData.x, y1: 300, y2: actionData.y };
-        expect(prevPath.toJS()).toEqual(expectedPrevPath);
       });
       
       

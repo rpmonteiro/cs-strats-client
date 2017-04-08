@@ -142,6 +142,7 @@ export default function reducer(state = initialState, action = {}) {
       const marker    = markers.get(markerId);
       const paths     = marker.get('paths');
       const path      = paths.get(pathIdx);
+
       const firstPath = pathIdx === 0;
       const lastPath  = pathIdx === paths.size - 1;
       let prevPath = firstPath ? '' : paths.get(pathIdx - 1);
@@ -159,8 +160,8 @@ export default function reducer(state = initialState, action = {}) {
         x2 = x;
         y2 = y;
       } else {
-        x1 = path.get('x2');
-        y1 = path.get('y2');
+        x1 = prevPath.get('x2');
+        y1 = prevPath.get('y2');
         x2 = x;
         y2 = y;
       }
@@ -197,13 +198,12 @@ export default function reducer(state = initialState, action = {}) {
       if (!mostForwardMarker) {
         newRoundTime = parseFloat((roundTime - durationDiff).toFixed(0));
       }
-      
+
       const key = ['markers', markerId, 'paths'];
       return state.withMutations(newState => {
         newState.set('roundTime', newRoundTime);
         newState.setIn(['markers', markerId, 'time'], newMarkerTime);
         newState.setIn([...key, pathIdx], newPath);
-        prevPath && newState.setIn([...key, pathIdx - 1], prevPath);
         nextPath && newState.setIn([...key, pathIdx + 1], nextPath);
       });
     }
