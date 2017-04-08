@@ -88,7 +88,6 @@ export default function reducer(state = initialState, action = {}) {
         newState.setIn(['markers', _id], marker);
         newState.set('roundTime', newRoundTime);
       });
-      // return state.setIn(['markers', action.data.id.toString()], action.data);
     }
     
   // TODO: REFACTOR some pieces of code used multiple times like the get last marker's coords

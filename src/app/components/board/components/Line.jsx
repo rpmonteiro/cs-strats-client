@@ -9,6 +9,7 @@ export default class Line extends PureComponent {
     y1: PropTypes.number.isRequired,
     y2: PropTypes.number.isRequired,
     idx: PropTypes.number.isRequired,
+    isLast: PropTypes.bool.isRequired,
     markerId: PropTypes.number.isRequired,
     clickHandler: PropTypes.func.isRequired,
     mouseDownHandler: PropTypes.func.isRequired
@@ -17,7 +18,7 @@ export default class Line extends PureComponent {
   squareWidth = 10;
 
   render() {
-    const { x1, x2, y1, y2, markerId, idx, clickHandler, mouseDownHandler } = this.props;
+    const { x1, x2, y1, y2, markerId, idx, clickHandler, mouseDownHandler, isLast } = this.props;
     
     return (
       <svg className="path">
@@ -34,6 +35,7 @@ export default class Line extends PureComponent {
           onMouseDown={mouseDownHandler}
           data-markerId={markerId}
           data-pathIdx={idx}
+          data-isLast={isLast}
           className="path-node"
           fill="yellow"
           width="10"

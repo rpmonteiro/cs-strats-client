@@ -386,7 +386,7 @@ describe('Board reducer', () => {
   
   });
   
-  // TODO: fix paths disappearing!
+
   describe('UPDATE_PATH', () => {
     
     const initialState = reducer(complexState);

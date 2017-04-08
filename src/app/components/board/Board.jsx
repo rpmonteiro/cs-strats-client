@@ -29,6 +29,7 @@ export class Board extends PureComponent {
   state = {
     activeMarkerId: '',
     draggingMarkerId: '',
+    draggingPath: '',
     mouseDown: false
   }
   
@@ -61,6 +62,11 @@ export class Board extends PureComponent {
       return;
     }
     
+    if (this.targetIsPath(e) && mouseDown) {
+      this.startPathDrag(e);
+      return;
+    }
+    
     if (this.targetIsMarker(e) && mouseDown) {
       this.startMarkerDrag(e);
       return;
@@ -89,6 +95,15 @@ export class Board extends PureComponent {
     const { previewLine } = this.props;
     const { activeMarkerId, draggingMarkerId, draggingPath } = this.state;
     const { x, y } = this.getXYCoords(e);
+
+    if (this.targetIsPath(e)) {
+      const { isLast, markerId } = e.target.dataset;
+      
+      if (isLast === 'true') {
+        this.toggleActiveMarker(markerId);
+      }
+      return;
+    }
     
     if (draggingPath) {
       this.stopPathDrag();
@@ -113,6 +128,11 @@ export class Board extends PureComponent {
   targetIsMarker = (e) => {
     return e.target.classList.contains('marker');
   }
+  
+  
+  targetIsPath = (e) => {
+    return e.target.classList.contains('path-node');
+  }
 
   
   addPath = () => {
@@ -124,10 +144,17 @@ export class Board extends PureComponent {
   
   
   dragPath = (e) => {
-    console.log('dragPath');
     const { draggingPath: { pathIdx, markerId } } = this.state;
     const { x, y } = this.getXYCoords(e);
     this.props.dispatch(updatePath({pathIdx, markerId, x, y}));
+  }
+  
+  
+  startPathDrag = (e) => {
+    console.log('startPathDrag');
+    const { pathIdx, markerId } = e.target.dataset;
+    const data = { pathIdx: parseInt(pathIdx), markerId };
+    this.setState({draggingPath: data});
   }
   
   
@@ -142,18 +169,15 @@ export class Board extends PureComponent {
   }
   
   
-  pathDownHandler = (e) => {
+  pathDownHandler = () => {
     console.log('pathDownHandler');
-    const { pathIdx, markerId } = e.target.dataset;
-    const data = { pathIdx: parseInt(pathIdx), markerId };
-    console.log('data', data);
-    this.setState({draggingPath: data});
+    this.setState({mouseDown: true});
   }
   
   
-  setPreviewLine = () => {
+  setPreviewLine = (markerId) => {
     const { activeMarkerId } = this.state;
-    this.props.dispatch(setPreviewLine(activeMarkerId));
+    this.props.dispatch(setPreviewLine(activeMarkerId || markerId));
   }
   
   
@@ -173,7 +197,7 @@ export class Board extends PureComponent {
   markerClickHandler = (e) => {
     e.stopPropagation(); // so it doesnt trigger board click
     console.log('markerClickHandler');
-    const { activeMarkerId, draggingMarkerId } = this.state;
+    const { draggingMarkerId } = this.state;
     
     if (draggingMarkerId) {
       this.stopMarkerDrag();
@@ -181,19 +205,24 @@ export class Board extends PureComponent {
     }
     
     const id = this.getMarkerId(e);
-    
     if (e.shiftKey) {
       this.props.dispatch(removeMarker(id));
       return;
     }
-    
 
+    this.toggleActiveMarker(id);
+  }
+  
+  
+  toggleActiveMarker = (markerId) => {
+    const { activeMarkerId } = this.state;
+    
     if (activeMarkerId !== '') {
-      this.setState({activeMarkerId: ''});
+      this.resetSelections();
       return;
     }
     
-    this.setState({activeMarkerId: parseInt(id)}, this.setPreviewLine);
+    this.setState({activeMarkerId: parseInt(markerId)}, this.setPreviewLine);
   }
   
 
@@ -263,6 +292,7 @@ export class Board extends PureComponent {
             y1={path.get('y1')}
             y2={path.get('y2')}
             idx={idx}
+            isLast={idx === markerPaths.size - 1}
             clickHandler={this.pathClickHandler}
             mouseDownHandler={this.pathDownHandler}
             markerId={id}
