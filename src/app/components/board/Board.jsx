@@ -96,7 +96,7 @@ export class Board extends PureComponent {
     const { activeMarkerId, draggingMarkerId, draggingPath } = this.state;
     const { x, y } = this.getXYCoords(e);
 
-    if (this.targetIsPath(e)) {
+    if (this.targetIsPath(e) && !draggingPath) {
       const { isLast, markerId } = e.target.dataset;
       
       if (isLast === 'true') {
