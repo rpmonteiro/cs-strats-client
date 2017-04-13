@@ -1,0 +1,25 @@
+.timeline-caret {
+  position: absolute;
+  width: auto;
+  height: 8rem;
+}
+
+.timeline-caret .cls-1 {
+  fill: #ED1F24;
+  stroke-width: 6px;
+}
+
+.timeline-caret .cls-1,
+.timeline-caret .cls-2 {
+  stroke: #FFF;
+  stroke-miterlimit: 10;
+}
+
+.timeline-caret .cls-2 {
+  fill: none;
+  stroke-width: 5px;
+}
+
+.timeline-caret .cls-3 {
+  fill: #F7941E;
+}
