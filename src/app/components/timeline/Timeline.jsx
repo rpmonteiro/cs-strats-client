@@ -2,14 +2,17 @@ import React, { PropTypes, PureComponent } from 'react';
 import { connect }     from 'react-redux';
 import TimelineRuler   from './components/TimelineRuler';
 import TimelineCaret   from './components/TimelineCaret';
+import TimelineMarker  from './components/TimelineMarker';
 import { updateCaret } from './state/actions';
 
 
 export class Timeline extends PureComponent {
 
   static propTypes = {
-    dispatch: PropTypes.func.isRequired,
-    caretPos: PropTypes.number.isRequired
+    dispatch:      PropTypes.func.isRequired,
+    caretPos:      PropTypes.number.isRequired,
+    markers:       PropTypes.object.isRequired,
+    roundDuration: PropTypes.number.isRequired
   }
   
   state = {
@@ -71,6 +74,27 @@ export class Timeline extends PureComponent {
   }
   
   
+  renderMarkers = () => {
+    const { markers, roundDuration } = this.props;
+    const tl = this.refTimeline;
+    
+    if (!tl || !markers.size) {
+      return false;
+    }
+    
+    const tlMarkers = [];
+    markers.map((m, idx) => {
+      const id = m.get('id');
+      const time = m.get('time');
+      const pos = Math.abs((time / roundDuration - 1) * 100);
+      const top = idx * 10;
+      tlMarkers.push(<TimelineMarker key={`m-${idx}`} pos={pos} top={top} id={id} />);
+    });
+    
+    return tlMarkers;
+  }
+  
+  
   setRefTimeline = (el) => this.refTimeline = el;
   setRefCaret    = (el) => this.refCaret = el;
   
@@ -84,6 +108,7 @@ export class Timeline extends PureComponent {
         onMouseDown={this.mouseDownHandler}
         onMouseMove={this.mouseMoveHandler}
       >
+        {this.renderMarkers()}
         <TimelineRuler />
         <TimelineCaret ref={this.setRefCaret} left={caretPos} />
       </div>
@@ -94,7 +119,9 @@ export class Timeline extends PureComponent {
 
 const mapStateToProps = (state) => {
   return {
-    caretPos: state.timeline.get('caretPos')
+    caretPos:      state.timeline.get('caretPos'),
+    markers:       state.board.get('markers'),
+    roundDuration: state.board.get('roundDuration')
   };
 };
 
