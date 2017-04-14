@@ -8,6 +8,6 @@ TimelineCaret.propTypes = {
 export default function TimelineCaret({left}) {
   
   return (
-    <Caret style={{left: 50}} className="timeline-caret" />
+    <Caret style={{left: `${left}%`}} className="timeline-caret" />
   );
 }

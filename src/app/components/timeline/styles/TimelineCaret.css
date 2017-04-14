@@ -2,6 +2,7 @@
   position: absolute;
   width: auto;
   height: 8rem;
+  cursor: ew-resize;
 }
 
 .timeline-caret .cls-1 {
