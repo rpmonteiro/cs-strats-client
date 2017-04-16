@@ -241,7 +241,6 @@ describe('Board reducer', () => {
       expect(marker.get('x')).toEqual(350);
       expect(marker.get('y')).toEqual(350);
     });
-  
   });
   
   
@@ -391,19 +390,21 @@ describe('Board reducer', () => {
     
     const initialState = reducer(complexState);
     function makeSetup(markerId, pathIdx, actionData) {
-      const state = reducer(initialState, actions.updatePath(actionData));
+      const state     = reducer(initialState, actions.updatePath(actionData));
       const initPaths = initialState.getIn(['markers', markerId, 'paths']);
-      const paths = state.getIn(['markers', markerId, 'paths']);
+      const paths     = state.getIn(['markers', markerId, 'paths']);
       
       return {
-        initPath:     initialState.getIn(['markers', markerId, 'paths', pathIdx]),
-        initMarker:   initialState.getIn(['markers', markerId]),
-        initPrevPath: initPaths.get(pathIdx - 1),
-        initNextPath: initPaths.get(pathIdx + 1),
-        path:         state.getIn(['markers', markerId, 'paths', pathIdx]),
-        marker:       state.getIn(['markers', markerId]),
-        prevPath:     paths.get(pathIdx - 1),
-        nextPath:     paths.get(pathIdx + 1),
+        initRoundTime: initialState.get('roundTime'),
+        initPath:      initialState.getIn(['markers', markerId, 'paths', pathIdx]),
+        initMarker:    initialState.getIn(['markers', markerId]),
+        initPrevPath:  initPaths.get(pathIdx - 1),
+        initNextPath:  initPaths.get(pathIdx + 1),
+        roundTime:     state.get('roundTime'),
+        path:          state.getIn(['markers', markerId, 'paths', pathIdx]),
+        marker:        state.getIn(['markers', markerId]),
+        prevPath:      paths.get(pathIdx - 1),
+        nextPath:      paths.get(pathIdx + 1),
         state,
         initialState
       };
@@ -447,16 +448,8 @@ describe('Board reducer', () => {
       it('should update the marker time', () => {
         const { initMarker, marker } = makeSetup(markerId, pathIdx, actionData);
         expect(initMarker.get('time')).toEqual(65);
-        expect(marker.get('time')).toEqual(62);
+        expect(marker.get('time')).toNotEqual(initMarker.get('time'));
       });
-      
-      
-      it('should update the global round time if most forward marker', () => {
-        const { state, initialState } = makeSetup(markerId, pathIdx, actionData);
-        expect(initialState.get('roundTime')).toEqual(65);
-        expect(state.get('roundTime')).toEqual(62);
-      });
-
     });
     
     
@@ -524,6 +517,109 @@ describe('Board reducer', () => {
       
         const expectedNextPath = { time: 12, x1: actionData.x, x2: 350, y1: actionData.y, y2: 350 };
         expect(nextPath.toJS()).toEqual(expectedNextPath);
+      });
+    });
+    
+    
+    describe('updates roundTime and marker time', () => {
+    
+      it('should set time forward if path is longer and player is the most forward', () => {
+        const markerId = '2';
+        const pathIdx = 2;
+        const actionData = { markerId, pathIdx, x: 1200, y: 1200 };
+        
+        const { initMarker, marker, initRoundTime, roundTime, initPath, path } = makeSetup(markerId, pathIdx, actionData);
+        
+        expect(initPath.toJS()).toEqual({ time: 20, x1: 350, x2: 450, y1: 350, y2: 600 });
+        expect(path.get('x2')).toEqual(1200);
+        expect(path.get('y2')).toEqual(1200);
+        expect(path.get('time')).toBeGreaterThan(initPath.get('time'));
+        
+        expect(initRoundTime).toEqual(65);
+        expect(initMarker.get('time')).toEqual(initRoundTime);
+        
+        expect(marker.get('time')).toBeLessThan(initMarker.get('time'));
+        expect(roundTime).toEqual(marker.get('time'));
+      });
+      
+      
+      it('should set time backward if path is shorter and marker is the most forward', () => {
+        const markerId = '2';
+        const pathIdx = 2;
+        const actionData = { markerId, pathIdx, x: 440, y: 590 };
+        
+        const { initMarker, marker, initRoundTime, roundTime, initPath, path } = makeSetup(markerId, pathIdx, actionData);
+        
+        expect(initPath.toJS()).toEqual({ time: 20, x1: 350, x2: 450, y1: 350, y2: 600 });
+        expect(path.get('x2')).toEqual(actionData.x);
+        expect(path.get('y2')).toEqual(actionData.y);
+        expect(path.get('time')).toBeLessThan(initPath.get('time'));
+        
+        expect(initRoundTime).toEqual(65);
+        expect(initMarker.get('time')).toEqual(initRoundTime);
+
+        expect(marker.get('time')).toBeGreaterThan(initMarker.get('time'));
+        expect(roundTime).toEqual(marker.get('time'));
+      });
+      
+      
+      it('should only update marker time (shorter path) if marker is not the most forward', () => {
+        const markerId = '1';
+        const pathIdx = 1;
+        const actionData = { markerId, pathIdx, x: 440, y: 590 };
+        
+        const { initMarker, marker, initRoundTime, roundTime, initPath, path } = makeSetup(markerId, pathIdx, actionData);
+        
+        expect(initPath.toJS()).toEqual({ time: 10, x1: 350, x2: 450, y1: 350, y2: 600 });
+        expect(path.get('x2')).toEqual(actionData.x);
+        expect(path.get('y2')).toEqual(actionData.y);
+        expect(path.get('time')).toBeLessThan(initPath.get('time'));
+        
+        expect(initRoundTime).toEqual(65);
+        expect(initMarker.get('time')).toEqual(75);
+        
+        expect(marker.get('time')).toBeGreaterThan(initMarker.get('time'));
+        expect(roundTime).toEqual(initRoundTime);
+      });
+      
+      
+      it('should only update marker time (longer path) if marker is not the most forward', () => {
+        const markerId = '1';
+        const pathIdx = 1;
+        const actionData = { markerId, pathIdx, x: 650, y: 650 };
+        
+        const { initMarker, marker, initRoundTime, roundTime, initPath, path } = makeSetup(markerId, pathIdx, actionData);
+        
+        expect(initPath.toJS()).toEqual({ time: 10, x1: 350, x2: 450, y1: 350, y2: 600 });
+        expect(path.get('x2')).toEqual(actionData.x);
+        expect(path.get('y2')).toEqual(actionData.y);
+        expect(path.get('time')).toBeGreaterThan(initPath.get('time'));
+        
+        expect(initRoundTime).toEqual(65);
+        expect(initMarker.get('time')).toEqual(75);
+        
+        expect(marker.get('time')).toBeLessThan(initMarker.get('time'));
+        expect(roundTime).toEqual(initRoundTime);
+      });
+      
+      
+      it('should update global time if marker becomes the most forward', () => {
+        const markerId = '1';
+        const pathIdx = 1;
+        const actionData = { markerId, pathIdx, x: 1200, y: 1200 };
+        
+        const { initMarker, marker, initRoundTime, roundTime, initPath, path } = makeSetup(markerId, pathIdx, actionData);
+        
+        expect(initPath.toJS()).toEqual({ time: 10, x1: 350, x2: 450, y1: 350, y2: 600 });
+        expect(path.get('x2')).toEqual(actionData.x);
+        expect(path.get('y2')).toEqual(actionData.y);
+        expect(path.get('time')).toBeGreaterThan(initPath.get('time'));
+        
+        expect(initRoundTime).toEqual(65);
+        expect(initMarker.get('time')).toEqual(75);
+        
+        expect(marker.get('time')).toBeLessThan(initRoundTime);
+        expect(roundTime).toBeLessThan(initRoundTime);
       });
     
     });
