@@ -65,7 +65,7 @@ export default function reducer(state = initialState, action = {}) {
       if (!mostForwardMarker) {
         newRoundTime = newMarkerTime;
       }
-      console.log('newRoundTime', newRoundTime);
+
       const newPaths = marker.get('paths').map((p, idx) => {
         const currTime = p.get('time');
         const newTime = currTime - durationDiff;
@@ -108,26 +108,26 @@ export default function reducer(state = initialState, action = {}) {
         y2: previewCoords.get('y2')
       });
       
-      const duration       = coordsToSecs(coords);
-      const roundTime      = state.get('roundTime');
-      const roundDuration  = state.get('roundDuration');
-      const prevMarkerTime = marker.get('time');
-      const markerTime     = parseFloat((prevMarkerTime - duration).toFixed(0));
+      const duration      = coordsToSecs(coords);
+      const roundTime     = state.get('roundTime');
+      const roundDuration = state.get('roundDuration');
+      const prevTime      = marker.get('time');
+      const newTime       = parseFloat((prevTime - duration).toFixed(0));
       
-      const mostForwardMarker = markers.find(p => p.get('time') < markerTime);
-      const pathTime = parseFloat((roundDuration - markerTime).toFixed(0));
+      const mostForwardMarker = newTime < roundTime;
+      const pathTime = parseFloat((roundDuration - newTime).toFixed(0));
       
       let newRoundTime = roundTime;
-      if (!mostForwardMarker) {
-        newRoundTime = parseFloat((roundTime - duration).toFixed(0));
+      if (mostForwardMarker) {
+        newRoundTime = newTime;
       }
-      
+
       const path     = coords.set('time', pathTime);
       const newPaths = marker.get('paths').push(path);
 
       return state.withMutations(newState => {
         newState.set('roundTime', newRoundTime);
-        newState.setIn(['markers', markerId, 'time'], markerTime);
+        newState.setIn(['markers', markerId, 'time'], newTime);
         newState.setIn(['markers', markerId, 'paths'], newPaths);
       });
     }
@@ -241,8 +241,37 @@ export default function reducer(state = initialState, action = {}) {
   
   case types.REMOVE_MARKER:
     {
-      // TODO: if deleted marker was the most forward one, reset the roundTime!!
-      return state.deleteIn(['markers', action.data.toString()]);
+      const markerId      = action.data.toString();
+      const roundTime     = state.get('roundTime');
+      const roundDuration = state.get('roundDuration');
+      const markers       = state.get('markers');
+      const marker        = markers.get(markerId);
+      const markerTime    = marker.get('time');
+      console.log('markerId', markerId, 'markers', markers.toJS());
+      const mostForwardMarker = roundTime === markerTime;
+      
+      let newRoundTime = roundTime;
+      if (mostForwardMarker && markers.size > 1) {
+        let min = roundDuration;
+        markers.map(m => {
+          if (m.get('id') === parseInt(markerId)) {
+            return;
+          }
+          const time = m.get('time');
+          if (time < min) {
+            min = time;
+          }
+        });
+        console.log('min', min);
+        newRoundTime = min;
+      } else if (markers.size === 1) {
+        newRoundTime = roundDuration;
+      }
+      
+      return state.withMutations(newState => {
+        newState.set('roundTime', newRoundTime);
+        newState.deleteIn(['markers', markerId]);
+      });
     }
   
   
