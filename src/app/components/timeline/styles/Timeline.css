@@ -1,0 +1,9 @@
+.timeline {
+  width: 100%;
+  height: 10rem;
+  display: flex;
+  align-items: flex-end;
+  border: 0.5px solid white;
+  position: relative;
+  padding: 1rem;
+}

@@ -1,4 +1,5 @@
 @import './app/components/board/board';
+@import './app/components/timeline/timeline';
 @import './app/views/editor/editor';
 @import './app/views/app/app';
 

@@ -65,7 +65,7 @@ export default function reducer(state = initialState, action = {}) {
       if (!mostForwardMarker) {
         newRoundTime = newMarkerTime;
       }
-      
+      console.log('newRoundTime', newRoundTime);
       const newPaths = marker.get('paths').map((p, idx) => {
         const currTime = p.get('time');
         const newTime = currTime - durationDiff;
@@ -188,14 +188,16 @@ export default function reducer(state = initialState, action = {}) {
       const prevDuration  = path.get('time') - prevPathTime;
       const durationDiff  = prevDuration - newPathDuration;
       const markerTime    = marker.get('time');
-      const newMarkerTime = markerTime - durationDiff;
+      const newMarkerTime = markerTime + durationDiff;
+      const roundTime     = state.get('roundTime');
+      let newRoundTime    = roundTime;
       
-      const roundTime  = state.get('roundTime');
-      let newRoundTime = roundTime;
-      
-      const mostForwardMarker = markers.find(p => p.get('time') < markerTime);
+      const mostForwardMarker = markers.find(p => {
+        return (p.get('id') !== parseInt(markerId)) && (p.get('time') < newMarkerTime);
+      });
+
       if (!mostForwardMarker) {
-        newRoundTime = parseFloat((roundTime - durationDiff).toFixed(0));
+        newRoundTime = parseFloat((roundTime + durationDiff).toFixed(0));
       }
 
       const key = ['markers', markerId, 'paths'];

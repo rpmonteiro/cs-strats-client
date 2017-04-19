@@ -38,6 +38,26 @@ module.exports = function (env = process.env.NODE_ENV) {
     module: {
       rules: [
         {
+          test: /\.svg$/,
+          use: [
+            {
+              loader: 'babel-loader'
+            },
+            {
+              loader: 'react-svg-loader',
+              query: {
+                svgo: {
+                  plugins: [
+                    {removeTitle: false},
+                    { removeStyleElement: true }
+                  ],
+                  floatPrecision: 2
+                }
+              }
+            }
+          ]
+        },
+        {
           test: /\.jsx?$/,
           use: [
             {
@@ -59,7 +79,7 @@ module.exports = function (env = process.env.NODE_ENV) {
           exclude: /node_modules/
         },
         {
-          test: /\.(png|jpe?g|gif|svg)$/,
+          test: /\.(png|jpe?g|gif)$/,
           use: [
             {
               loader: 'url-loader',

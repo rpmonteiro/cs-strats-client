@@ -1,5 +1,6 @@
 import React, { PropTypes, PureComponent } from 'react';
-import Board from 'components/board/Board';
+import Board    from 'components/board/Board';
+import Timeline from 'components/timeline/Timeline';
 
 export default class Editor extends PureComponent {
 
@@ -22,6 +23,7 @@ export default class Editor extends PureComponent {
     return (
       <div className="editor">
         <Board />
+        <Timeline />
       </div>
     );
   }
