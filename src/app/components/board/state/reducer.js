@@ -15,6 +15,10 @@ export default function reducer(state = initialState, action = {}) {
   
   case types.ADD_MARKER:
     {
+      if (state.get('markers').size >= 10) {
+        return state;
+      }
+      
       const { x, y } = action.data;
       const roundDuration = state.get('roundDuration');
       const id = state.get('markers').size + 1;

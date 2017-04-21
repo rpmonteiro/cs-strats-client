@@ -119,6 +119,29 @@ describe('Board reducer', () => {
         paths: []
       });
     });
+    
+    
+    it('should not allow more than 10 markers', () => {
+      let initialState = reducer(complexState);
+      expect(initialState.get('markers').size).toEqual(3);
+      
+      const moreMarkers = {
+        4: {},
+        5: {},
+        6: {},
+        7: {},
+        8: {},
+        9: {},
+        10: {}
+      };
+      
+      initialState = initialState.mergeIn(['markers'], fromJS(moreMarkers));
+      expect(initialState.get('markers').size).toEqual(10);
+      
+      const actionData = { x: 500, y: 500 };
+      const state = reducer(initialState, actions.addMarker(actionData));
+      expect(state.get('markers').size).toEqual(10);
+    });
   
   });
   
