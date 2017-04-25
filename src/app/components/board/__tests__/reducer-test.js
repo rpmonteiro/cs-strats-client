@@ -715,8 +715,6 @@ describe('Board reducer', () => {
       });
       
     });
-    
-    
   
   });
   

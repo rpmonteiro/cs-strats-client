@@ -245,13 +245,12 @@ export default function reducer(state = initialState, action = {}) {
   
   case types.REMOVE_MARKER:
     {
-      const markerId      = action.data.toString();
-      const roundTime     = state.get('roundTime');
-      const roundDuration = state.get('roundDuration');
-      const markers       = state.get('markers');
-      const marker        = markers.get(markerId);
-      const markerTime    = marker.get('time');
-      console.log('markerId', markerId, 'markers', markers.toJS());
+      const markerId          = action.data.toString();
+      const roundTime         = state.get('roundTime');
+      const roundDuration     = state.get('roundDuration');
+      const markers           = state.get('markers');
+      const marker            = markers.get(markerId);
+      const markerTime        = marker.get('time');
       const mostForwardMarker = roundTime === markerTime;
       
       let newRoundTime = roundTime;
@@ -266,7 +265,7 @@ export default function reducer(state = initialState, action = {}) {
             min = time;
           }
         });
-        console.log('min', min);
+
         newRoundTime = min;
       } else if (markers.size === 1) {
         newRoundTime = roundDuration;

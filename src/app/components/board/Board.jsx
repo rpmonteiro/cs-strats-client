@@ -4,6 +4,8 @@ import { connect }                         from 'react-redux';
 import Marker                              from './components/Marker';
 import PreviewLine                         from './components/PreviewLine';
 import Line                                from './components/Line';
+import { interpolate }                     from './utils/interpolation';
+import { Map }                             from 'immutable';
 
 import {
   addMarker,
@@ -20,10 +22,11 @@ import {
 export class Board extends PureComponent {
   
   static propTypes = {
-    dispatch:    PropTypes.func.isRequired,
-    markers:     PropTypes.object.isRequired,
-    roundTime:   PropTypes.number.isRequired,
-    previewLine: PropTypes.oneOfType([PropTypes.bool, PropTypes.object])
+    dispatch:      PropTypes.func.isRequired,
+    markers:       PropTypes.object.isRequired,
+    caretTime:     PropTypes.number.isRequired,
+    roundDuration: PropTypes.number.isRequired,
+    previewLine:   PropTypes.oneOfType([PropTypes.bool, PropTypes.object])
   }
     
   state = {
@@ -273,57 +276,91 @@ export class Board extends PureComponent {
   }
   
   
+  getMarkerPos = (marker) => {
+    const { roundDuration, caretTime } = this.props;
+    const markerPaths = marker.get('paths');
+    
+    const markerTime = roundDuration - marker.get('time');
+    let markerPos = marker;
+    if (caretTime <= markerTime) {
+      const nodeIdx = markerPaths.findIndex(p => {
+        const pTime = p.get('time');
+        return caretTime <= pTime;
+      });
+      
+      const node = nodeIdx === -1 ? '' : markerPaths.get(nodeIdx);
+      const prevNode = nodeIdx === 0 ? '' : markerPaths.get(nodeIdx - 1);
+
+      const nodeTime = node ? node.get('time') : 0;
+      const prevNodeTime = prevNode ? prevNode.get('time') : 0;
+      
+      const progress = (caretTime - prevNodeTime) / (nodeTime - prevNodeTime);
+      
+      markerPos = interpolate(prevNode || marker, node, progress);
+    } else if (markerPaths.size) {
+      const lastM = markerPaths.last();
+      markerPos = Map({x: lastM.get('x2'), y: lastM.get('y2')});
+    }
+    
+    return markerPos;
+  }
+  
+  
   render() {
-    const { markers, previewLine, dispatch, roundTime } = this.props;
+    const { markers, previewLine, dispatch, caretTime } = this.props;
     const { activeMarkerId } = this.state;
     
     const pathEls = [], markerEls = [];
     
-    markers.map(p => {
-      const id = p.get('id');
-      const markerPaths = p.get('paths');
-      
-      markerPaths.map((path, idx) => {
-        pathEls.push(
-          <Line
-            key={`path-${id}-${idx}`}
-            x1={path.get('x1')}
-            x2={path.get('x2')}
-            y1={path.get('y1')}
-            y2={path.get('y2')}
-            idx={idx}
-            isLast={idx === markerPaths.size - 1}
-            clickHandler={this.pathClickHandler}
-            mouseDownHandler={this.pathDownHandler}
-            markerId={id}
+    if (markers.size) {
+      markers.map(m => {
+        const id = m.get('id');
+        const markerPaths = m.get('paths');
+        
+        markerPaths.map((path, idx) => {
+          pathEls.push(
+            <Line
+              key={`path-${id}-${idx}`}
+              x1={path.get('x1')}
+              x2={path.get('x2')}
+              y1={path.get('y1')}
+              y2={path.get('y2')}
+              idx={idx}
+              isLast={idx === markerPaths.size - 1}
+              clickHandler={this.pathClickHandler}
+              mouseDownHandler={this.pathDownHandler}
+              markerId={id}
+            />
+          );
+        });
+        
+        let className = 'marker';
+        if (activeMarkerId === id) {
+          className += ' active';
+        }
+        
+        const markerPos = this.getMarkerPos(m);
+        
+        markerEls.push(
+          <Marker
+            clickHandler={this.markerClickHandler}
+            className={className}
+            dispatch={dispatch}
+            key={`p-${id}`}
+            id={id}
+            x={markerPos.get('x')}
+            y={markerPos.get('y')}
           />
         );
       });
-      
-      let className = 'marker';
-      if (activeMarkerId === id) {
-        className += ' active';
-      }
-
-      markerEls.push(
-        <Marker
-          clickHandler={this.markerClickHandler}
-          className={className}
-          dispatch={dispatch}
-          key={`p-${id}`}
-          id={id}
-          x={p.get('x')}
-          y={p.get('y')}
-        />
-      );
-    });
+    }
 
     let previewPath;
     if (previewLine) {
       previewPath = <PreviewLine coords={previewLine} />;
     }
     
-    const currTime = <div className="round-time">{roundTime}</div>;
+    const currTime = <div className="round-time">{caretTime}</div>;
     
     return (
       <div className="board"
@@ -347,9 +384,10 @@ export class Board extends PureComponent {
 
 const mapStateToProps = (state) => {
   return {
-    markers: state.board.get('markers'),
-    roundTime: state.board.get('roundTime'),
-    previewLine: state.board.get('previewLine')
+    markers:       state.board.get('markers'),
+    roundDuration: state.board.get('roundDuration'),
+    previewLine:   state.board.get('previewLine'),
+    caretTime:     state.timeline.get('caretTime')
   };
 };
 

@@ -22,8 +22,8 @@ export class Timeline extends PureComponent {
   
   
   dragCaret = (e) => {
-    const pos = this.getCaretPos(e);
-    this.props.dispatch(updateCaret(pos));
+    const caretPos = this.getCaretPos(e);
+    this.props.dispatch(updateCaret(caretPos));
   }
   
   
@@ -46,8 +46,13 @@ export class Timeline extends PureComponent {
   
   
   getCaretPos = (e) => {
+    const { roundDuration } = this.props;
     const tl = this.refTimeline;
-    return (e.clientX - tl.offsetLeft) / tl.offsetWidth * 100;
+    const pos = (e.clientX - tl.offsetLeft) / tl.offsetWidth * 100;
+    const timeOffset = 0.22;
+    let time = Math.round((pos / roundDuration * 100) * 10) / 10;
+    time = time - time * timeOffset;
+    return { pos, time };
   }
   
   

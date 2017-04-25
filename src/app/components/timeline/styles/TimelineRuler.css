@@ -6,21 +6,21 @@
     #FFF,
     #FFF 2px,
     transparent 0,
-    transparent 10%
+    transparent 11.5%
   ) no-repeat,
     repeating-linear-gradient(
     90deg,
     #FFF,
     #FFF 2px,
     transparent 0,
-    transparent 5%
+    transparent 5.75%
   ) 100% no-repeat,
     repeating-linear-gradient(
     90deg,
     #FFF,
     #FFF 2px,
     transparent 0,
-    transparent 1%
+    transparent 1.15%
   ) 100% no-repeat;
   background-position: 0 100%;
   background-size: 100% 50%, 100% 25%, 100% 13%;

@@ -1,8 +1,8 @@
 import * as types from './action-types';
 
-export function updateCaret(leftPos) {
+export function updateCaret(data) {
   return {
     type: types.UPDATE_CARET,
-    data: leftPos
+    data: data
   };
 }
