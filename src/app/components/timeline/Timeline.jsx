@@ -104,7 +104,7 @@ export class Timeline extends PureComponent {
   setRefCaret    = (el) => this.refCaret = el;
   
   render() {
-    const { caretPos } = this.props;
+    const { caretPos, roundDuration } = this.props;
     
     return (
       <div ref={this.setRefTimeline}
@@ -114,7 +114,7 @@ export class Timeline extends PureComponent {
         onMouseMove={this.mouseMoveHandler}
       >
         {this.renderMarkers()}
-        <TimelineRuler />
+        <TimelineRuler roundDuration={roundDuration} />
         <TimelineCaret ref={this.setRefCaret} left={caretPos} />
       </div>
     );
