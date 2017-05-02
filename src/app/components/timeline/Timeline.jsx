@@ -71,7 +71,7 @@ export class Timeline extends PureComponent {
 
     const pos = start / tl.offsetWidth * 100;
     const rulerPos = (x - tl.offsetLeft - tr.offsetLeft) / tr.offsetWidth;
-    const time = Math.floor(rulerPos * roundDuration);
+    const time = rulerPos * roundDuration;
     return { pos, time };
   }
 

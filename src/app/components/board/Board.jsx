@@ -20,7 +20,7 @@ import {
 
 
 export class Board extends PureComponent {
-  
+
   static propTypes = {
     dispatch:      PropTypes.func.isRequired,
     markers:       PropTypes.object.isRequired,
@@ -28,70 +28,70 @@ export class Board extends PureComponent {
     roundDuration: PropTypes.number.isRequired,
     previewLine:   PropTypes.oneOfType([PropTypes.bool, PropTypes.object])
   }
-    
+
   state = {
     activeMarkerId: '',
     draggingMarkerId: '',
     draggingPath: '',
     mouseDown: false
   }
-  
-  
+
+
   componentWillMount() {
     document.addEventListener('keydown', this.keydownHandler);
   }
-  
-  
+
+
   componentWillUnmount() {
     document.removeEventListener('keydown', this.keydownHandler);
   }
-  
-  
+
+
   componentWillReceiveProps() {
   }
-  
-  
+
+
   moveHandler = (e) => {
     const { draggingMarkerId, mouseDown, draggingPath } = this.state;
     const { previewLine, dispatch } = this.props;
-    
+
     if (draggingPath) {
       this.dragPath(e);
       return;
     }
-    
+
     if (draggingMarkerId) {
       this.dragMarker(e);
       return;
     }
-    
+
     if (this.targetIsPath(e) && mouseDown) {
       this.startPathDrag(e);
       return;
     }
-    
+
     if (this.targetIsMarker(e) && mouseDown) {
       this.startMarkerDrag(e);
       return;
     }
-    
+
     if (previewLine) {
       const { x, y } = this.getXYCoords(e);
       dispatch(updatePreviewLine({x, y}));
     }
   }
-  
-  
+
+
   mouseDownHandler = () => {
     this.setState({mouseDown: true});
   }
-  
-  
+
+
   mouseUpHandler = () => {
     this.setState({mouseDown: false});
   }
-  
-  
+
+
   clickHandler = (e) => {
     e.stopPropagation();
     console.log('board clickHandler');
@@ -101,18 +101,18 @@ export class Board extends PureComponent {
 
     if (this.targetIsPath(e) && !draggingPath) {
       const { isLast, markerId } = e.target.dataset;
-      
+
       if (isLast === 'true') {
         this.toggleActiveMarker(markerId);
       }
       return;
     }
-    
+
     if (draggingPath) {
       this.stopPathDrag();
       return;
     }
-    
+
     if (draggingMarkerId) {
       this.stopMarkerDrag();
       return;
@@ -122,7 +122,7 @@ export class Board extends PureComponent {
       this.addPath(activeMarkerId);
       return;
     }
-    
+
     console.log('add marker');
     this.props.dispatch(addMarker({x, y}));
   }
@@ -131,82 +131,82 @@ export class Board extends PureComponent {
   targetIsMarker = (e) => {
     return e.target.classList.contains('marker');
   }
-  
-  
+
+
   targetIsPath = (e) => {
     return e.target.classList.contains('path-node');
   }
 
-  
+
   addPath = () => {
     console.log('adding path');
     const { activeMarkerId } = this.state;
     this.props.dispatch(addPath(activeMarkerId));
     this.setPreviewLine();
   }
-  
-  
+
+
   dragPath = (e) => {
     const { draggingPath: { pathIdx, markerId } } = this.state;
     const { x, y } = this.getXYCoords(e);
     this.props.dispatch(updatePath({pathIdx, markerId, x, y}));
   }
-  
-  
+
+
   startPathDrag = (e) => {
     console.log('startPathDrag');
     const { pathIdx, markerId } = e.target.dataset;
     const data = { pathIdx: parseInt(pathIdx), markerId };
     this.setState({draggingPath: data});
   }
-  
-  
+
+
   stopPathDrag = () => {
     console.log('stopPathDrag');
     this.setState({draggingPath: false});
   }
-  
-  
+
+
   pathClickHandler = () => {
     console.log('pathClickHandler');
   }
-  
-  
+
+
   pathDownHandler = () => {
     console.log('pathDownHandler');
     this.setState({mouseDown: true});
   }
-  
-  
+
+
   setPreviewLine = (markerId) => {
     const { activeMarkerId } = this.state;
     this.props.dispatch(setPreviewLine(activeMarkerId || markerId));
   }
-  
-  
+
+
   getXYCoords = (e) => {
     let boardEl = e.target.parentNode;
     if (!boardEl.classList.contains('board')) {
       boardEl = e.target.parentNode.parentNode;
     }
-    
+
     return {
       x: e.clientX - boardEl.parentNode.offsetLeft,
       y: e.clientY - boardEl.parentNode.offsetTop
     };
   }
-  
-  
+
+
   markerClickHandler = (e) => {
     e.stopPropagation(); // so it doesnt trigger board click
     console.log('markerClickHandler');
     const { draggingMarkerId } = this.state;
-    
+
     if (draggingMarkerId) {
       this.stopMarkerDrag();
       return;
     }
-    
+
     const id = this.getMarkerId(e);
     if (e.shiftKey) {
       this.props.dispatch(removeMarker(id));
@@ -215,45 +215,45 @@ export class Board extends PureComponent {
 
     this.toggleActiveMarker(id);
   }
-  
-  
+
+
   toggleActiveMarker = (markerId) => {
     const { activeMarkerId } = this.state;
-    
+
     if (activeMarkerId !== '') {
       this.resetSelections();
       return;
     }
-    
+
     this.setState({activeMarkerId: parseInt(markerId)}, this.setPreviewLine);
   }
-  
+
 
   startMarkerDrag = (e) => {
     console.log('startMarkerDrag');
     const id = this.getMarkerId(e);
     this.setState({draggingMarkerId: id});
   }
-  
-  
+
+
   dragMarker = (e) => {
     const { draggingMarkerId: id } = this.state;
     const { x, y } = this.getXYCoords(e);
     this.props.dispatch(updateMarker({x, y, id}));
   }
-  
-  
+
+
   stopMarkerDrag = () => {
     console.log('stop marker drag');
     this.setState({draggingMarkerId: ''});
   }
 
-  
+
   getMarkerId = (e) => {
     return e.target.dataset.id;
   }
-  
-  
+
+
   keydownHandler = (e) => {
     const key = e.which || e.keycode;
     console.log('onKeyDown');
@@ -262,24 +262,24 @@ export class Board extends PureComponent {
       this.resetSelections();
     }
   }
-  
-  
+
+
   resetSelections = () => {
     // TODO: rename this method?
     const { previewLine, dispatch } = this.props;
-    
+
     if (previewLine) {
       dispatch(resetPreviewLine());
     }
-    
+
     this.setState({activeMarkerId: ''});
   }
-  
-  
+
+
   getMarkerPos = (marker) => {
     const { roundDuration, caretTime } = this.props;
     const markerPaths = marker.get('paths');
-    
+
     const markerTime = roundDuration - marker.get('time');
     let markerPos = marker;
     if (caretTime <= markerTime) {
@@ -287,36 +287,36 @@ export class Board extends PureComponent {
         const pTime = p.get('time');
         return caretTime <= pTime;
       });
-      
+
       const node = nodeIdx === -1 ? '' : markerPaths.get(nodeIdx);
       const prevNode = nodeIdx === 0 ? '' : markerPaths.get(nodeIdx - 1);
 
       const nodeTime = node ? node.get('time') : 0;
       const prevNodeTime = prevNode ? prevNode.get('time') : 0;
-      
+
       const progress = (caretTime - prevNodeTime) / (nodeTime - prevNodeTime);
-      
+
       markerPos = interpolate(prevNode || marker, node, progress);
     } else if (markerPaths.size) {
       const lastM = markerPaths.last();
       markerPos = Map({x: lastM.get('x2'), y: lastM.get('y2')});
     }
-    
+
     return markerPos;
   }
-  
-  
+
+
   render() {
     const { markers, previewLine, dispatch, caretTime } = this.props;
     const { activeMarkerId } = this.state;
-    
+
     const pathEls = [], markerEls = [];
-    
+
     if (markers.size) {
       markers.map(m => {
         const id = m.get('id');
         const markerPaths = m.get('paths');
-        
+
         markerPaths.map((path, idx) => {
           pathEls.push(
             <Line
@@ -333,14 +333,14 @@ export class Board extends PureComponent {
             />
           );
         });
-        
+
         let className = 'marker';
         if (activeMarkerId === id) {
           className += ' active';
         }
-        
+
         const markerPos = this.getMarkerPos(m);
-        
+
         markerEls.push(
           <Marker
             clickHandler={this.markerClickHandler}
@@ -359,9 +359,9 @@ export class Board extends PureComponent {
     if (previewLine) {
       previewPath = <PreviewLine coords={previewLine} />;
     }
-    
-    const currTime = <div className="round-time">{caretTime}</div>;
-    
+
+    const currTime = <div className="round-time">{Math.floor(caretTime)}</div>;
+
     return (
       <div className="board"
         onClick={this.clickHandler}
