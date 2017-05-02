@@ -65,7 +65,7 @@ export class Timeline extends PureComponent {
     }
 
     if (x - tl.offsetLeft >= end) {
-      const pos = ((tr.offsetWidth - caretOffset - caretWidth) / tr.offsetWidth) * 100;
+      const pos = ((tr.offsetWidth - caretWidth) / tr.offsetWidth) * 100;
       return { pos, time: roundDuration };
     }
 
