@@ -1,10 +1,7 @@
-import React, { PropTypes, PureComponent } from 'react';
-
+import React, { PropTypes } from 'react';
 
 const getRulerStyles = (roundDuration) => {
   const percentage = 100 / (roundDuration / 10);
-  
-  
   return {
     background: `
       repeating-linear-gradient(
@@ -35,17 +32,14 @@ const getRulerStyles = (roundDuration) => {
 };
 
 
-export default class MyComponent extends PureComponent {
+TimelineRuler.propTypes = {
+  roundDuration: PropTypes.number.isRequired
+};
 
-  static propTypes = {
-    roundDuration: PropTypes.number.isRequired
-  }
+export default function TimelineRuler({roundDuration}) {
+  const style = getRulerStyles(roundDuration);
 
-  render() {
-    const style = getRulerStyles(this.props.roundDuration);
-
-    return (
-      <div style={style} className="timeline-ruler"></div>
-    );
-  }
+  return (
+    <div className="timeline-ruler" style={style}></div>
+  );
 }

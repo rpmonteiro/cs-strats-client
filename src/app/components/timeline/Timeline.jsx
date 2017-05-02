@@ -26,6 +26,10 @@ export class Timeline extends PureComponent {
     this.props.dispatch(updateCaret(caretPos));
   }
 
+  clickHandler = (e) => {
+    this.dragCaret(e);
+  }
+
 
   startCaretDrag = () => {
     this.setState({draggingCaret: true});
@@ -50,11 +54,24 @@ export class Timeline extends PureComponent {
     const caretWidth = document.querySelector('.timeline-caret').width.baseVal.value;
     const tr = document.querySelector('.timeline-ruler');
     const tl = this.refTimeline;
-    // TODO: align caret with TR start when 0
-    const pos = (e.clientX - tl.offsetLeft - caretWidth / 2) / tl.offsetWidth * 100;
-    const rulerPos = (e.clientX - tl.offsetLeft - tr.offsetLeft) / tr.offsetWidth;
-    const time = Math.floor(rulerPos * roundDuration);
+    const x = e.clientX;
 
+    const caretOffset = Math.ceil(tr.offsetLeft - caretWidth / 2);
+    const start = (x - tl.offsetLeft - caretWidth / 2);
+    const end = tl.offsetWidth - tr.offsetLeft;
+
+    if (start <= caretOffset) {
+      return { pos: (caretOffset / tr.offsetWidth) * 100, time: 0 };
+    }
+
+    if (x - tl.offsetLeft >= end) {
+      const pos = ((tr.offsetWidth - caretOffset - caretWidth) / tr.offsetWidth) * 100;
+      return { pos, time: roundDuration };
+    }
+
+    const pos = start / tl.offsetWidth * 100;
+    const rulerPos = (x - tl.offsetLeft - tr.offsetLeft) / tr.offsetWidth;
+    const time = Math.floor(rulerPos * roundDuration);
     return { pos, time };
   }
 
@@ -112,6 +129,7 @@ export class Timeline extends PureComponent {
     return (
       <div ref={this.setRefTimeline}
         className="timeline"
+        onClick={this.clickHandler}
         onMouseUp={this.mouseUpHandler}
         onMouseDown={this.mouseDownHandler}
         onMouseMove={this.mouseMoveHandler}
