@@ -1,25 +1,4 @@
 .timeline-ruler {
   height: 50%;
   width: 100%;
-  /*background: repeating-linear-gradient(
-    90deg,
-    #FFF,
-    #FFF 2px,
-    transparent 0,
-    transparent 11.5%
-  ) no-repeat,
-    repeating-linear-gradient(
-    90deg,
-    #FFF,
-    #FFF 2px,
-    transparent 0,
-    transparent 5.75%
-  ) 100% no-repeat,
-    repeating-linear-gradient(
-    90deg,
-    #FFF,
-    #FFF 2px,
-    transparent 0,
-    transparent 1.15%
-  ) 100% no-repeat;*/
 }

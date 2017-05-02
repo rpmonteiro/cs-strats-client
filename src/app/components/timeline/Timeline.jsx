@@ -14,79 +14,82 @@ export class Timeline extends PureComponent {
     markers:       PropTypes.object.isRequired,
     roundDuration: PropTypes.number.isRequired
   }
-  
+
   state = {
     mouseDown: false,
     draggingCaret: false
   }
-  
-  
+
+
   dragCaret = (e) => {
     const caretPos = this.getCaretPos(e);
     this.props.dispatch(updateCaret(caretPos));
   }
-  
-  
+
+
   startCaretDrag = () => {
     this.setState({draggingCaret: true});
   }
-  
-  
+
+
   stopCaretDrag = () => {
     this.setState({draggingCaret: false});
   }
-  
-  
+
+
   targetIsCaret = (e) => {
     const className = 'timeline-caret';
     const el = e.target;
     const parentEl = e.target.parentNode;
     return el.classList.contains(className) || parentEl.classList.contains(className);
   }
-  
-  
+
+
   getCaretPos = (e) => {
     const { roundDuration } = this.props;
+    const caretWidth = document.querySelector('.timeline-caret').width.baseVal.value;
+    const tr = document.querySelector('.timeline-ruler');
     const tl = this.refTimeline;
-    const pos = (e.clientX - tl.offsetLeft) / tl.offsetWidth * 100;
-    const timeOffset = 0.22;
-    let time = Math.round((pos / roundDuration * 100) * 10) / 10;
-    time = time - time * timeOffset;
+    // TODO: align caret with TR start when 0
+    const pos = (e.clientX - tl.offsetLeft - caretWidth / 2) / tl.offsetWidth * 100;
+    const rulerPos = (e.clientX - tl.offsetLeft - tr.offsetLeft) / tr.offsetWidth;
+    const time = Math.floor(rulerPos * roundDuration);
+
     return { pos, time };
   }
-  
-  
+
+
   mouseUpHandler = () => {
     this.setState({mouseDown: false, draggingCaret: false});
   }
-  
-  
+
+
   mouseDownHandler = () => {
     this.setState({mouseDown: true});
   }
-  
-  
+
+
   mouseMoveHandler = (e) => {
     const { draggingCaret, mouseDown } = this.state;
 
     if (draggingCaret) {
       return this.dragCaret(e);
     }
-    
+
     if (this.targetIsCaret(e) && mouseDown) {
       return this.startCaretDrag(e);
     }
   }
-  
-  
+
+
   renderMarkers = () => {
     const { markers, roundDuration } = this.props;
     const tl = this.refTimeline;
-    
+
     if (!tl || !markers.size) {
       return false;
     }
-    
+
     const tlMarkers = [];
     markers.map((m, idx) => {
       const id = m.get('id');
@@ -95,17 +98,17 @@ export class Timeline extends PureComponent {
       const top = idx * 10;
       tlMarkers.push(<TimelineMarker key={`m-${idx}`} pos={pos} top={top} id={id} />);
     });
-    
+
     return tlMarkers;
   }
-  
-  
+
+
   setRefTimeline = (el) => this.refTimeline = el;
   setRefCaret    = (el) => this.refCaret = el;
-  
+
   render() {
     const { caretPos, roundDuration } = this.props;
-    
+
     return (
       <div ref={this.setRefTimeline}
         className="timeline"
