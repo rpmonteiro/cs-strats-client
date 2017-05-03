@@ -7,11 +7,12 @@ TimelineMarkers.propTypes = {
 };
 
 const markerWidth = 1;
+const timelinePadding = 1;
 
 export default function TimelineMarkers({pos, top, id}) {
-  
-  const left = `calc(${pos}% + ${markerWidth}rem / 2)`;
-  
+
+  const left = `calc((${pos}% - ${markerWidth}rem / 2) - ${timelinePadding}rem)`;
+
   return (
     <div className="timeline-marker" style={{left: left, top: `${top}%`}}>
       <span>{id}</span>
