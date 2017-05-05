@@ -5,3 +5,8 @@
 .path-node:hover {
   fill: #FFF;
 }
+
+.path-line:hover {
+  stroke: yellow;
+  cursor: pointer;
+}

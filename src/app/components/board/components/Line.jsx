@@ -11,15 +11,17 @@ export default class Line extends PureComponent {
     idx: PropTypes.number.isRequired,
     isLast: PropTypes.bool.isRequired,
     markerId: PropTypes.number.isRequired,
-    clickHandler: PropTypes.func.isRequired,
-    mouseDownHandler: PropTypes.func.isRequired
+    lineDownHandler: PropTypes.func.isRequired,
+    nodeDownHandler: PropTypes.func.isRequired,
+    nodeClickHandler: PropTypes.func.isRequired,
+    lineClickHandler: PropTypes.func.isRequired
   }
-  
+
   squareWidth = 10;
 
   render() {
-    const { x1, x2, y1, y2, markerId, idx, clickHandler, mouseDownHandler, isLast } = this.props;
-    
+    const { x1, x2, y1, y2, markerId, idx, nodeClickHandler, nodeDownHandler, lineClickHandler, lineDownHandler, isLast } = this.props;
+
     return (
       <svg className="path">
         <line
@@ -29,10 +31,15 @@ export default class Line extends PureComponent {
           y2={y2}
           stroke="red"
           strokeWidth={3}
+          onClick={lineClickHandler}
+          onMouseDown={lineDownHandler}
+          data-pathIdx={idx}
+          data-markerId={markerId}
+          className="path-line"
         />
         <rect
-          onClick={clickHandler}
-          onMouseDown={mouseDownHandler}
+          onClick={nodeClickHandler}
+          onMouseDown={nodeDownHandler}
           data-markerId={markerId}
           data-pathIdx={idx}
           data-isLast={isLast}

@@ -1,6 +1,7 @@
 
 export const ADD_MARKER          = 'ADD_MARKER';
 export const ADD_PATH            = 'ADD_PATH';
+export const ADD_INT_PATH        = 'ADD_INT_PATH';
 
 export const UPDATE_MARKER       = 'UPDATE_MARKER';
 export const UPDATE_PATH         = 'UPDATE_PATH';

@@ -8,7 +8,6 @@ import reducer      from '../state/reducer';
 
 describe('Board reducer', () => {
 
-
   const simpleState = fromJS({
     roundDuration: 87,
     roundTime: 80,
@@ -730,6 +729,73 @@ describe('Board reducer', () => {
         expect(state.get('roundTime')).toEqual(initialState.get('roundDuration'));
       });
 
+    });
+
+  });
+
+
+  describe('ADD_INT_PATH', () => {
+
+    it('should add an intermediary path with the coords given', () => {
+      const initialState = reducer(simpleState);
+
+      expect(initialState.getIn(['markers', '1', 'paths']).size).toEqual(2);
+
+      const actionData = {
+        markerId: '1',
+        pathIdx: 0,
+        x: 325,
+        y: 400
+      };
+
+      const state = reducer(initialState, actions.addIntPath(actionData));
+      expect(state.getIn(['markers', '1', 'paths']).size).toEqual(3);
+    });
+
+
+    it('should adjust the prev path coords/time', () => {
+      const initialState = reducer(simpleState);
+
+      const pKey = ['markers', '1', 'paths', 0];
+      const initPrevP = initialState.getIn(pKey).toJS();
+
+      expect(initPrevP.x2).toEqual(350);
+      expect(initPrevP.y2).toEqual(350);
+      expect(initPrevP.time).toEqual(2);
+
+      const actionData = {
+        markerId: '1',
+        pathIdx: 0,
+        x: 325,
+        y: 400
+      };
+
+      const state = reducer(initialState, actions.addIntPath(actionData));
+
+      const prevP = state.getIn(['markers', '1', 'paths', 0]).toJS();
+
+      expect(prevP.x2).toEqual(actionData.x);
+      expect(prevP.y2).toEqual(actionData.y);
+      expect(prevP.time).toBeLessThan(initPrevP.time);
+    });
+
+  });
+
+
+  describe('REMOVE_PATH', () => {
+
+    it('should remove a path', () => {
+      const initialState = reducer(simpleState);
+
+      expect(initialState.getIn(['markers', '1', 'paths']).size).toEqual(2);
+
+      const actionData = {
+        markerId: '1',
+        pathIdx: 0
+      };
+
+      const state = reducer(initialState, actions.removePath(actionData));
+      expect(state.getIn(['markers', '1', 'paths']).size).toEqual(1);
     });
 
   });

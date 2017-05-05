@@ -17,6 +17,14 @@ export function addPath(markerId) {
 }
 
 
+export function addIntPath(data) {
+  return {
+    type: types.ADD_INT_PATH,
+    data: data
+  };
+}
+
+
 export function setPreviewLine(markerId) {
   return {
     type: types.SET_PREVIEW_LINE,

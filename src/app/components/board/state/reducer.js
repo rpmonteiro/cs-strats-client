@@ -142,6 +142,35 @@ export default function reducer(state = initialState, action = {}) {
     }
 
 
+  case types.ADD_INT_PATH: {
+    const { x, y, pathIdx, markerId } = action.data;
+    const pKey     = ['markers', markerId, 'paths'];
+    const paths    = state.getIn(pKey);
+    const prevPath = paths.get(pathIdx);
+
+    let newPath = Map({
+      x1: x,
+      x2: prevPath.get('x2'),
+      y1: y,
+      y2: prevPath.get('y2')
+    });
+
+    const duration = coordsToSecs(newPath);
+    const newPrevPath = prevPath.merge(Map({
+      time: prevPath.get('time') - duration,
+      x2: x,
+      y2: y
+    }));
+
+    newPath = newPath.set('time', prevPath.get('time'));
+    const newPaths = paths.splice(pathIdx, 1, newPrevPath, newPath);
+
+    return state.withMutations(newState => {
+      newState.setIn(pKey, newPaths);
+    });
+  }
+
+
   case types.UPDATE_PATH:
     {
       const { markerId, pathIdx, x, y } = action.data;
@@ -248,39 +277,48 @@ export default function reducer(state = initialState, action = {}) {
     return state.set('previewLine', false);
 
 
-  case types.REMOVE_MARKER:
-    {
-      const markerId          = action.data.toString();
-      const roundTime         = state.get('roundTime');
-      const roundDuration     = state.get('roundDuration');
-      const markers           = state.get('markers');
-      const marker            = markers.get(markerId);
-      const markerTime        = marker.get('time');
-      const mostForwardMarker = roundTime === markerTime;
+  case types.REMOVE_MARKER: {
+    const markerId          = action.data.toString();
+    const roundTime         = state.get('roundTime');
+    const roundDuration     = state.get('roundDuration');
+    const markers           = state.get('markers');
+    const marker            = markers.get(markerId);
+    const markerTime        = marker.get('time');
+    const mostForwardMarker = roundTime === markerTime;
 
-      let newRoundTime = roundTime;
-      if (mostForwardMarker && markers.size > 1) {
-        let min = roundDuration;
-        markers.map(m => {
-          if (m.get('id') === parseInt(markerId)) {
-            return;
-          }
-          const time = m.get('time');
-          if (time < min) {
-            min = time;
-          }
-        });
-
-        newRoundTime = min;
-      } else if (markers.size === 1) {
-        newRoundTime = roundDuration;
-      }
-
-      return state.withMutations(newState => {
-        newState.set('roundTime', newRoundTime);
-        newState.deleteIn(['markers', markerId]);
+    let newRoundTime = roundTime;
+    if (mostForwardMarker && markers.size > 1) {
+      let min = roundDuration;
+      markers.map(m => {
+        if (m.get('id') === parseInt(markerId)) {
+          return;
+        }
+        const time = m.get('time');
+        if (time < min) {
+          min = time;
+        }
       });
+
+      newRoundTime = min;
+    } else if (markers.size === 1) {
+      newRoundTime = roundDuration;
     }
+
+    return state.withMutations(newState => {
+      newState.set('roundTime', newRoundTime);
+      newState.deleteIn(['markers', markerId]);
+    });
+  }
+
+
+  case types.REMOVE_PATH: {
+    const { pathIdx, markerId } = action.data;
+    const pathsK = ['markers', markerId, 'paths'];
+
+    const newPaths = state.getIn(pathsK).splice(pathIdx, 1);
+
+    return state.setIn(pathsK, newPaths);
+  }
 
 
   default:

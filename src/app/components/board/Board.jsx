@@ -10,12 +10,14 @@ import { Map }                             from 'immutable';
 import {
   addMarker,
   addPath,
+  addIntPath,
   updateMarker,
   updatePath,
   setPreviewLine,
   updatePreviewLine,
   resetPreviewLine,
-  removeMarker
+  removeMarker,
+  removePath
 } from './state/actions';
 
 
@@ -123,7 +125,6 @@ export class Board extends PureComponent {
       return;
     }
 
-    console.log('add marker');
     this.props.dispatch(addMarker({x, y}));
   }
 
@@ -167,14 +168,44 @@ export class Board extends PureComponent {
   }
 
 
-  pathClickHandler = () => {
-    console.log('pathClickHandler');
+  nodeClickHandler = () => {
+    console.log('nodeClickHandler');
   }
 
 
-  pathDownHandler = () => {
-    console.log('pathDownHandler');
+  nodeDownHandler = (e) => {
+    console.log('nodeDownHandler');
+    if (e.shiftKey) {
+      const { pathIdx, markerId } = e.target.dataset;
+      console.log('remove path');
+      this.props.dispatch(removePath({pathIdx, markerId}));
+      return;
+    }
+
     this.setState({mouseDown: true});
+  }
+
+
+  lineDownHandler = (e) => {
+    const { pathIdx, markerId } = e.target.dataset;
+    const { x, y } = this.getXYCoords(e);
+    e.stopPropagation();
+
+
+
+    this.props.dispatch(addIntPath({
+      pathIdx: parseInt(pathIdx),
+      markerId,
+      x,
+      y
+    }));
+    console.log('lineDownHandler', x, y, pathIdx, markerId);
+  }
+
+
+  lineClickHandler = (e) => {
+    e.stopPropagation(); // so it doesnt trigger board click
+    console.log('lineClickHandler');
   }
 
 
@@ -311,12 +342,11 @@ export class Board extends PureComponent {
     const { activeMarkerId } = this.state;
 
     const pathEls = [], markerEls = [];
-
     if (markers.size) {
       markers.map(m => {
         const id = m.get('id');
         const markerPaths = m.get('paths');
-
+        console.log('markerPaths size', markerPaths.size);
         markerPaths.map((path, idx) => {
           pathEls.push(
             <Line
@@ -327,8 +357,10 @@ export class Board extends PureComponent {
               y2={path.get('y2')}
               idx={idx}
               isLast={idx === markerPaths.size - 1}
-              clickHandler={this.pathClickHandler}
-              mouseDownHandler={this.pathDownHandler}
+              lineClickHandler={this.lineClickHandler}
+              lineDownHandler={this.lineDownHandler}
+              nodeClickHandler={this.nodeClickHandler}
+              nodeDownHandler={this.nodeDownHandler}
               markerId={id}
             />
           );
