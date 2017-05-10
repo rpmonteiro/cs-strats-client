@@ -64,11 +64,20 @@ describe('Board reducer', () => {
         ]
       },
       3: {
-        id: 1,
+        id: 3,
         x: 600,
         y: 600,
         time: 87,
         paths: []
+      },
+      4: {
+        id: 4,
+        x: 150,
+        y: 150,
+        time: 82,
+        paths: [
+          { time: 5, x1: 300, x2: 360, y1: 400, y2: 480 }
+        ]
       }
     }
   });
@@ -105,13 +114,13 @@ describe('Board reducer', () => {
 
     it('should add a new marker', () => {
       const initialState = reducer(complexState);
-      expect(initialState.get('markers').size).toEqual(3);
+      expect(initialState.get('markers').size).toEqual(4);
 
       const actionData = { x: 500, y: 500 };
       const state = reducer(initialState, actions.addMarker(actionData));
-      expect(state.get('markers').size).toEqual(4);
-      expect(state.getIn(['markers', '4']).toJS()).toEqual({
-        id: 4,
+      expect(state.get('markers').size).toEqual(5);
+      expect(state.getIn(['markers', '5']).toJS()).toEqual({
+        id: 5,
         x: 500,
         y: 500,
         time: 87,
@@ -122,7 +131,7 @@ describe('Board reducer', () => {
 
     it('should not allow more than 10 markers', () => {
       let initialState = reducer(complexState);
-      expect(initialState.get('markers').size).toEqual(3);
+      expect(initialState.get('markers').size).toEqual(4);
 
       const moreMarkers = {
         4: {},
@@ -796,6 +805,128 @@ describe('Board reducer', () => {
 
       const state = reducer(initialState, actions.removePath(actionData));
       expect(state.getIn(['markers', '1', 'paths']).size).toEqual(1);
+    });
+
+
+    it('should handle removing the only path', () => {
+      const initialState = reducer(complexState);
+      const roundDuration = initialState.get('roundDuration');
+
+      const actionData = {
+        markerId: '4',
+        pathIdx: 0
+      };
+
+      const markerK = ['markers', actionData.markerId];
+
+      const state = reducer(initialState, actions.removePath(actionData));
+      const marker = state.getIn(markerK).toJS();
+
+      expect(marker.paths.length).toEqual(0);
+      expect(marker.time).toEqual(roundDuration);
+    });
+
+
+    it('should handle deleting the first path', () => {
+      const initialState = reducer(simpleState);
+
+      const actionData = {
+        markerId: '1',
+        pathIdx: 0
+      };
+
+      const markerK = ['markers', actionData.markerId];
+      const pathsK = [...markerK, 'paths'];
+      const pKey = [...pathsK, actionData.pathIdx];
+
+      const initMarker = initialState.getIn(markerK).toJS();
+      const initNextPath = initialState.getIn([...pathsK, actionData.pathIdx + 1]).toJS();
+      expect(initialState.getIn(pKey.slice(0, 3)).size).toEqual(2);
+
+      const state = reducer(initialState, actions.removePath(actionData));
+      expect(state.getIn(pKey.slice(0, 3)).size).toEqual(1);
+
+      const marker = state.getIn(markerK).toJS();
+      const newPath = state.getIn(pKey).toJS();
+
+      expect(marker.time).toEqual(initMarker.time);
+      expect(newPath.x1).toEqual(marker.x);
+      expect(newPath.x2).toEqual(initNextPath.x2);
+      expect(newPath.y1).toEqual(marker.y);
+      expect(newPath.y2).toEqual(initNextPath.y2);
+    });
+
+
+    it('should update the marker time', () => {
+      const initialState = reducer(complexState);
+
+      const actionData = {
+        markerId: '2',
+        pathIdx: 2
+      };
+
+      const markerK = ['markers', actionData.markerId];
+      const pathsK = [...markerK, 'paths'];
+      const pKey = [...pathsK, actionData.pathIdx];
+
+      const initMarker = initialState.getIn(markerK).toJS();
+      const pathToDel = initialState.getIn(pKey).toJS();
+      const prevPath = initialState.getIn([...pKey.slice(0, 3), actionData.pathIdx - 1]).toJS();
+
+      expect(initialState.getIn(pKey.slice(0, 3)).size).toEqual(3);
+
+      const state = reducer(initialState, actions.removePath(actionData));
+      expect(state.getIn(pKey.slice(0, 3)).size).toEqual(2);
+
+      const marker = state.getIn(markerK).toJS();
+      const timeDiff = pathToDel.time - prevPath.time;
+
+      expect(marker.time).toEqual(initMarker.time + timeDiff);
+    });
+
+
+    it('should handle deleting an intermediate path in the most forward marker and update roundTime', () => {
+      const initialState = reducer(complexState);
+
+      const actionData = {
+        markerId: '2',
+        pathIdx: 1
+      };
+
+      const markerK = ['markers', actionData.markerId];
+      const pathsK = [...markerK, 'paths'];
+      const pKey = [...pathsK, actionData.pathIdx];
+
+      const initNextPath = initialState.getIn([...pathsK, actionData.pathIdx + 1]).toJS();
+      expect(initialState.getIn(pKey.slice(0, 3)).size).toEqual(3);
+
+      const state = reducer(initialState, actions.removePath(actionData));
+      expect(state.getIn(pKey.slice(0, 3)).size).toEqual(2);
+
+      const newPath = state.getIn(pKey).toJS();
+      expect(newPath.x1).toEqual(initNextPath.x1);
+      expect(newPath.x2).toEqual(initNextPath.x2);
+      expect(newPath.y1).toEqual(initNextPath.y1);
+      expect(newPath.y2).toEqual(initNextPath.y2);
+    });
+
+
+    it('should update the roundTime of the most forward marker', () => {
+      const initialState = reducer(complexState);
+
+      const actionData = {
+        markerId: '2',
+        pathIdx: 1
+      };
+
+      const markerK = ['markers', actionData.markerId];
+      const pathsK = [...markerK, 'paths'];
+
+      expect(initialState.get('roundTime')).toEqual(65);
+
+      const state = reducer(initialState, actions.removePath(actionData));
+      expect(state.getIn(pathsK).size).toEqual(2);
+      expect(state.get('roundTime')).toBeGreaterThan(initialState.get('roundTime'));
     });
 
   });
