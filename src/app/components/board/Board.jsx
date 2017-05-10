@@ -67,7 +67,7 @@ export class Board extends PureComponent {
       return;
     }
 
-    if (this.targetIsPath(e) && mouseDown) {
+    if (this.isTargetPath(e) && mouseDown) {
       this.startPathDrag(e);
       return;
     }
@@ -101,7 +101,11 @@ export class Board extends PureComponent {
     const { activeMarkerId, draggingMarkerId, draggingPath } = this.state;
     const { x, y } = this.getXYCoords(e);
 
-    if (this.targetIsPath(e) && !draggingPath) {
+    if (e.shiftKey) {
+      return;
+    }
+
+    if (this.isTargetPath(e) && !draggingPath) {
       const { isLast, markerId } = e.target.dataset;
 
       if (isLast === 'true') {
@@ -134,7 +138,7 @@ export class Board extends PureComponent {
   }
 
 
-  targetIsPath = (e) => {
+  isTargetPath = (e) => {
     return e.target.classList.contains('path-node');
   }
 
@@ -346,7 +350,7 @@ export class Board extends PureComponent {
       markers.map(m => {
         const id = m.get('id');
         const markerPaths = m.get('paths');
-        console.log('markerPaths size', markerPaths.size);
+        // console.log('markerPaths size', markerPaths.size);
         markerPaths.map((path, idx) => {
           pathEls.push(
             <Line
