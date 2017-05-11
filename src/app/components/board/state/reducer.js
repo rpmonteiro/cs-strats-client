@@ -353,13 +353,17 @@ export default function reducer(state = initialState, action = {}) {
 
       const newPathDuration = coordsToSecs(newPath);
       durationDiff = newPathDuration - pathToDel.get('time');
-      const newPathTime = newPathDuration;
-      // if (pathIdx > 1) {
-      //   newPathTime = prevPath.get('time') + newPathDuration;
-      // }
 
+      const newPathTime = prevPath.get('time') + newPathDuration;
       newPath = newPath.set('time', newPathTime);
-      newPaths = newPaths.set(pathIdx, newPath);
+      newPaths = newPaths.withMutations(np => {
+        np.set(pathIdx, newPath);
+        np.map((p, idx) => {
+          if (idx > pathIdx) {
+            np.setIn([idx, 'time'], p.get('time') + durationDiff);
+          }
+        });
+      });
 
       const timePassed = newPaths.reduce((a, b) => {
         return a + b.get('time');
@@ -388,16 +392,6 @@ export default function reducer(state = initialState, action = {}) {
         newRoundTime = nextMostFwMTime;
       }
     }
-
-
-    // newPaths.map((p, idx) => {
-    //   if (idx >= pathIdx) {
-    //     const currPTime = p.get('time');
-    //     newPaths.setIn([idx, 'time'], currPTime - durationDiff);
-    //   }
-    // });
-
-
 
     // console.log('newPaths', newPaths.toJS());
     return state.withMutations(newState => {
