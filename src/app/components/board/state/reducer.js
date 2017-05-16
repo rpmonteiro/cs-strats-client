@@ -5,7 +5,7 @@ import { coordsToSecs }      from '../utils/distance';
 const initialState = fromJS({
   roundDuration: 87,
   markers: {},
-  roundTime: 87,
+  roundTime: 0,
   previewLine: false
 });
 
@@ -61,10 +61,10 @@ export default function reducer(state = initialState, action = {}) {
       const newDuration    = coordsToSecs(newPath);
       const durationDiff   = prevDuration - newDuration;
       const prevMarkerTime = marker.get('time');
-      const newMarkerTime  = prevMarkerTime + durationDiff;
+      const newMarkerTime  = prevMarkerTime - durationDiff;
 
       const currRoundTime = state.get('roundTime');
-      const mostForwardMarker = state.get('markers').find(p => p.get('time') < newMarkerTime);
+      const mostForwardMarker = state.get('markers').find(p => p.get('time') > newMarkerTime);
       let newRoundTime = currRoundTime;
       if (!mostForwardMarker) {
         newRoundTime = newMarkerTime;
@@ -97,41 +97,43 @@ export default function reducer(state = initialState, action = {}) {
   // TODO: REFACTOR some pieces of code used multiple times like the get last marker's coords
   case types.ADD_PATH:
     {
-      const markerId = action.data.toString();
-      const markers  = state.get('markers');
-      const marker   = markers.get(markerId);
-
-      const prevNodeCoords = marker.get('paths').last()
-      || Map({x2: marker.get('x'), y2: marker.get('y')});
+      const markerId      = action.data.toString();
+      const markers       = state.get('markers');
+      const marker        = markers.get(markerId);
+      const markerTime    = marker.get('time');
+      const roundDuration = state.get('roundDuration');
       const previewCoords = state.get('previewLine');
 
+      const prevNode = marker.get('paths').last() ||
+        Map({
+          time: markerTime,
+          x2: marker.get('x'),
+          y2: marker.get('y')
+        });
+
       const coords = Map({
-        x1: prevNodeCoords.get('x2'),
+        x1: prevNode.get('x2'),
         x2: previewCoords.get('x2'),
-        y1: prevNodeCoords.get('y2'),
+        y1: prevNode.get('y2'),
         y2: previewCoords.get('y2')
       });
 
-      const duration      = coordsToSecs(coords);
-      const roundTime     = state.get('roundTime');
-      const roundDuration = state.get('roundDuration');
-      const prevTime      = marker.get('time');
-      const newTime       = parseFloat((prevTime - duration).toFixed(0));
+      const duration  = coordsToSecs(coords);
+      const roundTime = state.get('roundTime');
+      const newTime   = parseFloat((prevNode.get('time') + duration).toFixed(1));
 
-      if (newTime < 0) {
+      if (newTime > roundDuration) {
         return state;
       }
 
-
-      const mostForwardMarker = newTime < roundTime;
-      const pathTime = parseFloat((roundDuration - newTime).toFixed(0));
+      const mostForwardMarker = newTime > roundTime;
 
       let newRoundTime = roundTime;
       if (mostForwardMarker) {
         newRoundTime = newTime;
       }
 
-      const path     = coords.set('time', pathTime);
+      const path     = coords.set('time', newTime);
       const newPaths = marker.get('paths').push(path);
 
       return state.withMutations(newState => {
@@ -175,6 +177,7 @@ export default function reducer(state = initialState, action = {}) {
     {
       const { markerId, pathIdx, x, y } = action.data;
 
+      const roundTime = state.get('roundTime');
       const markers   = state.get('markers');
       const marker    = markers.get(markerId);
       const paths     = marker.get('paths');
@@ -182,8 +185,8 @@ export default function reducer(state = initialState, action = {}) {
 
       const firstPath = pathIdx === 0;
       const lastPath  = pathIdx === paths.size - 1;
-      let prevPath = firstPath ? '' : paths.get(pathIdx - 1);
-      let nextPath = lastPath ? '' : paths.get(pathIdx + 1);
+      const prevPath  = firstPath ? '' : paths.get(pathIdx - 1);
+      const nextPath  = lastPath ? '' : paths.get(pathIdx + 1);
 
       let x1, y1, x2, y2;
       if (firstPath) {
@@ -203,47 +206,43 @@ export default function reducer(state = initialState, action = {}) {
         y2 = y;
       }
 
-      const coords = Map({ x1, y1, x2, y2});
-      let newPath  = path.merge(coords);
-      const prevPathTime    = (prevPath && prevPath.get('time')) || 0;
+      const coords           = Map({ x1, y1, x2, y2});
+      let newPath            = path.merge(coords);
+      const prevPathTime     = prevPath ? prevPath.get('time') : 0;
+      const prevPathDuration = prevPathTime -
+        (pathIdx - 2 >= 0 ? paths.getIn([pathIdx - 2, 'time']) : 0);
+
       const newPathDuration = coordsToSecs(coords);
-      const newPathTime     = prevPathTime + newPathDuration;
+      const durationDiff    = prevPathDuration - newPathDuration;
+      const newPathTime     = path.get('time') - durationDiff;
 
-      newPath = newPath.set('time', newPathTime);
-
-      prevPath = prevPath && prevPath.merge(Map({
-        x2: x,
-        y2: y
-      }));
-
-      const newNextPathTime = newPathTime + newPathDuration;
-      nextPath = nextPath && nextPath.merge(Map({
-        time: newNextPathTime,
-        x1: x,
-        y1: y
-      }));
-
-      const prevDuration  = path.get('time') - prevPathTime;
-      const durationDiff  = prevDuration - newPathDuration;
-      const markerTime    = marker.get('time');
-      const newMarkerTime = markerTime + durationDiff;
-      const roundTime     = state.get('roundTime');
-      let newRoundTime    = roundTime;
-
-      const mostForwardMarker = markers.find(p => {
-        return (p.get('id') !== parseInt(markerId)) && (p.get('time') < newMarkerTime);
+      let newPaths = paths;
+      newPath  = newPath.set('time', newPathTime);
+      newPaths = newPaths.withMutations(np => {
+        np.set(pathIdx, newPath);
+        prevPath && np.set(pathIdx - 1, prevPath.merge(Map({ x2: x, y2: y })));
+        nextPath && np.set(pathIdx + 1, nextPath.merge(Map({ x1: x, y1: y })));
       });
 
+      newPaths = newPaths.withMutations(np => {
+        newPaths.map((p, idx) => {
+          if (idx > pathIdx) {
+            np.set('time', np.get('time') - durationDiff);
+          }
+        });
+      });
+
+      const mostForwardMarker = marker.get('time') - durationDiff > roundTime;
+      let newRoundTime;
       if (!mostForwardMarker) {
-        newRoundTime = parseFloat((roundTime + durationDiff).toFixed(0));
+        newRoundTime = parseFloat((newRoundTime + durationDiff).toFixed(1));
       }
 
-      const key = ['markers', markerId, 'paths'];
+      const k = ['markers', markerId];
       return state.withMutations(newState => {
-        newState.set('roundTime', newRoundTime);
-        newState.setIn(['markers', markerId, 'time'], newMarkerTime);
-        newState.setIn([...key, pathIdx], newPath);
-        nextPath && newState.setIn([...key, pathIdx + 1], nextPath);
+        newRoundTime && newState.set('roundTime', newRoundTime);
+        newState.setIn([... k, 'roundTime'], newPathTime);
+        newState.setIn([... k, 'paths'], newPaths);
       });
     }
 
@@ -319,7 +318,7 @@ export default function reducer(state = initialState, action = {}) {
     const markers   = state.get('markers');
     const roundTime = state.get('roundTime');
     const roundDuration = state.get('roundDuration');
-
+    // console.log('initial marker', marker.toJS());
     let newPaths = state.getIn(pathsK).splice(pathIdx, 1);
     if (newPaths.size === 0) {
       return state.withMutations(newState => {
@@ -360,6 +359,7 @@ export default function reducer(state = initialState, action = {}) {
         np.set(pathIdx, newPath);
         np.map((p, idx) => {
           if (idx > pathIdx) {
+            console.log('path time', p.get('time'), durationDiff);
             np.setIn([idx, 'time'], p.get('time') + durationDiff);
           }
         });
@@ -393,7 +393,7 @@ export default function reducer(state = initialState, action = {}) {
       }
     }
 
-    // console.log('newPaths', newPaths.toJS());
+    // console.log('newRoundTime', newRoundTime, 'newPaths', newPaths.toJS());
     return state.withMutations(newState => {
       newState.setIn(pathsK, newPaths);
       newState.setIn([...markerK, 'time'], newMarkerTime);
