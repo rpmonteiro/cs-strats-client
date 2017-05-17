@@ -227,7 +227,8 @@ export default function reducer(state = initialState, action = {}) {
       newPaths = newPaths.withMutations(np => {
         newPaths.map((p, idx) => {
           if (idx > pathIdx) {
-            np.set('time', np.get('time') - durationDiff);
+            const k = [idx, 'time'];
+            np.setIn(k, np.getIn(k) - durationDiff);
           }
         });
       });

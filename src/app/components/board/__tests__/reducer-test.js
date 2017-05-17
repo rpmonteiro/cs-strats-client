@@ -508,15 +508,15 @@ describe('Board reducer', () => {
       });
 
 
-      // it('should update the coords and time of the next path', () => {
-      //   const { initNextPath, nextPath } = makeSetup(markerId, pathIdx, actionData);
-      //
-      //   const expectedInitPrevPath = { time: 20, x1: 350, x2: 450, y1: 350, y2: 600 };
-      //   expect(initNextPath.toJS()).toEqual(expectedInitPrevPath);
-      //
-      //   const expectedNextPath = { time: 12, x1: actionData.x, x2: 450, y1: actionData.y, y2: 600 };
-      //   expect(nextPath.toJS()).toEqual(expectedNextPath);
-      // });
+      it('should update the coords and time of the next path', () => {
+        const { initNextPath, nextPath } = makeSetup(markerId, pathIdx, actionData);
+
+        const expectedInitNextPath = { time: 20, x1: 350, x2: 450, y1: 350, y2: 600 };
+        expect(initNextPath.toJS()).toEqual(expectedInitNextPath);
+
+        const expectedNextPath = { time: 23, x1: actionData.x, x2: 450, y1: actionData.y, y2: 600 };
+        expect(nextPath.toJS()).toEqual(expectedNextPath);
+      });
 
 
       // it('should update the marker time', () => {
