@@ -233,16 +233,17 @@ export default function reducer(state = initialState, action = {}) {
         });
       });
 
+      const newMarkerTime = parseFloat((marker.get('time') - durationDiff).toFixed(1));
       const mostForwardMarker = marker.get('time') - durationDiff > roundTime;
       let newRoundTime;
       if (!mostForwardMarker) {
-        newRoundTime = parseFloat((newRoundTime + durationDiff).toFixed(1));
+        newRoundTime = newMarkerTime;
       }
 
       const k = ['markers', markerId];
       return state.withMutations(newState => {
         newRoundTime && newState.set('roundTime', newRoundTime);
-        newState.setIn([... k, 'roundTime'], newPathTime);
+        newState.setIn([... k, 'time'], newMarkerTime);
         newState.setIn([... k, 'paths'], newPaths);
       });
     }

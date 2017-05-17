@@ -519,11 +519,11 @@ describe('Board reducer', () => {
       });
 
 
-      // it('should update the marker time', () => {
-      //   const { initMarker, marker } = makeSetup(markerId, pathIdx, actionData);
-      //   expect(initMarker.get('time')).toEqual(20);
-      //   expect(marker.get('time')).toNotEqual(initMarker.get('time'));
-      // });
+      it('should update the marker time', () => {
+        const { initMarker, marker } = makeSetup(markerId, pathIdx, actionData);
+        expect(initMarker.get('time')).toEqual(20);
+        expect(marker.get('time')).toBeGreaterThan(initMarker.get('time'));
+      });
     });
 
 
