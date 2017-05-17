@@ -533,12 +533,12 @@ describe('Board reducer', () => {
       const pathIdx = 1;
       const actionData = { markerId, pathIdx, x: 200, y: 200 };
 
-      // it('should not update the global round time if not most forward marker ', () => {
-      //   const { initialState, state } = makeSetup(markerId, pathIdx, actionData);
-      //
-      //   expect(initialState.get('roundTime')).toEqual(72);
-      //   expect(state.get('roundTime')).toEqual(72);
-      // });
+      it('should not update the global round time if not most forward marker ', () => {
+        const { initialState, state } = makeSetup(markerId, pathIdx, actionData);
+
+        expect(initialState.get('roundTime')).toEqual(72);
+        expect(state.get('roundTime')).toEqual(72);
+      });
 
 
       // it('should update the path coords', () => {

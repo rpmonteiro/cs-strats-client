@@ -235,8 +235,9 @@ export default function reducer(state = initialState, action = {}) {
 
       const newMarkerTime = parseFloat((marker.get('time') - durationDiff).toFixed(1));
       const mostForwardMarker = marker.get('time') - durationDiff > roundTime;
+
       let newRoundTime;
-      if (!mostForwardMarker) {
+      if (mostForwardMarker) {
         newRoundTime = newMarkerTime;
       }
 
