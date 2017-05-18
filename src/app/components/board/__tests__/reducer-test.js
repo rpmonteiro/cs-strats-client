@@ -828,7 +828,6 @@ describe('Board reducer', () => {
 
     it('should handle removing the only path', () => {
       const initialState = reducer(complexState);
-      const roundDuration = initialState.get('roundDuration');
 
       const actionData = {
         markerId: '4',
@@ -841,7 +840,7 @@ describe('Board reducer', () => {
       const marker = state.getIn(markerK).toJS();
 
       expect(marker.paths.length).toEqual(0);
-      expect(marker.time).toEqual(roundDuration);
+      expect(marker.time).toEqual(0);
     });
 
 

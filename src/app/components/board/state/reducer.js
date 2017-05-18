@@ -316,13 +316,12 @@ export default function reducer(state = initialState, action = {}) {
     const marker    = state.getIn(markerK);
     const markers   = state.get('markers');
     const roundTime = state.get('roundTime');
-    const roundDuration = state.get('roundDuration');
-    // console.log('initial marker', marker.toJS());
+
     let newPaths = state.getIn(pathsK).splice(pathIdx, 1);
     if (newPaths.size === 0) {
       return state.withMutations(newState => {
         newState.setIn(pathsK, List());
-        newState.setIn([...markerK, 'time'], roundDuration);
+        newState.setIn([...markerK, 'time'], 0);
       });
     }
 
