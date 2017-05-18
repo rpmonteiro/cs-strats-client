@@ -362,26 +362,23 @@ export default function reducer(state = initialState, action = {}) {
         });
       });
 
-      newMarkerTime = newPaths.reduce((a, b) => a + b.get('time'), 0);
+      newMarkerTime = newPaths.last().get('time');
     } else {
       const timeDiff = pathToDel.get('time') - prevPath.get('time');
       newMarkerTime = marker.get('time') - timeDiff;
     }
 
 
-    let newRoundTime = roundTime - durationDiff;
+    let newRoundTime = roundTime + durationDiff;
     const markerTime = marker.get('time');
     const mostFwM = markerTime === roundTime;
     if (mostFwM) {
-      const markerTimes = markers.map(m => {
-        if (m.get('id') !== parseInt(markerId)) {
-          return m.get('time');
-        }
-      }).toArray().filter(Boolean);
+      const nextMostFwMTime = markers.max((a, b) => {
+        return a.get('time') > b.get('time')
+          && a.get('id') !== marker.get('id');
+      });
 
-      const nextMostFwMTime = Math.min(...markerTimes);
-
-      if (nextMostFwMTime < newRoundTime) {
+      if (nextMostFwMTime.get('time') > newRoundTime) {
         newRoundTime = nextMostFwMTime;
       }
     }

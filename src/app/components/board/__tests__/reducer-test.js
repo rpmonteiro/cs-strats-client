@@ -943,7 +943,7 @@ describe('Board reducer', () => {
 
       const state = reducer(initialState, actions.removePath(actionData));
       expect(state.getIn(pathsK).size).toEqual(2);
-      expect(state.get('roundTime')).toBeGreaterThan(initialState.get('roundTime'));
+      expect(state.get('roundTime')).toBeLessThan(initialState.get('roundTime'));
     });
 
 
@@ -964,9 +964,10 @@ describe('Board reducer', () => {
       expect(initialState.getIn(lastPathTime)).toEqual(72);
 
       const state = reducer(initialState, actions.removePath(actionData));
-
       expect(state.getIn(firstPathTime)).toEqual(2);
       expect(state.getIn(lastPathTime)).toBeLessThan(72);
+      expect(state.get('roundTime')).toEqual(state.getIn(lastPathTime));
+      expect(state.getIn([...markerK, 'time'])).toEqual(state.getIn(lastPathTime));
     });
 
   });
@@ -989,7 +990,7 @@ describe('Board reducer', () => {
   //   expect(false).toBe(true);
   // });
 
-  // TODO: fix tests broken by changing roundTime
+
   // TODO: tests that catch the correct time diff between paths, etc.
 
 
