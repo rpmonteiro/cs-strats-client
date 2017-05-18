@@ -11,7 +11,7 @@ const timelinePadding = 1;
 
 export default function TimelineMarkers({pos, top, id}) {
 
-  const left = `calc((${pos}% - ${markerWidth}rem / 2) - ${timelinePadding}rem)`;
+  const left = `calc((${pos}% - ${markerWidth}rem / 2) + ${timelinePadding}rem)`;
 
   return (
     <div className="timeline-marker" style={{left: left, top: `${top}%`}}>

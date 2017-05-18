@@ -111,7 +111,7 @@ export class Timeline extends PureComponent {
     markers.map((m, idx) => {
       const id = m.get('id');
       const time = m.get('time');
-      const pos = Math.abs((time / roundDuration - 1) * 100);
+      const pos = Math.abs(time / roundDuration) * 100;
       const top = idx * 10;
       tlMarkers.push(<TimelineMarker key={`m-${idx}`} pos={pos} top={top} id={id} />);
     });
