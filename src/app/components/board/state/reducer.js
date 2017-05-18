@@ -177,11 +177,11 @@ export default function reducer(state = initialState, action = {}) {
     {
       const { markerId, pathIdx, x, y } = action.data;
 
-      const roundTime = state.get('roundTime');
-      const markers   = state.get('markers');
-      const marker    = markers.get(markerId);
-      const paths     = marker.get('paths');
-      const path      = paths.get(pathIdx);
+      const roundDuration = state.get('roundDuration');
+      const markers       = state.get('markers');
+      const marker        = markers.get(markerId);
+      const paths         = marker.get('paths');
+      const path          = paths.get(pathIdx);
 
       const firstPath = pathIdx === 0;
       const lastPath  = pathIdx === paths.size - 1;
@@ -234,7 +234,15 @@ export default function reducer(state = initialState, action = {}) {
       });
 
       const newMarkerTime = parseFloat((marker.get('time') - durationDiff).toFixed(1));
-      const mostForwardMarker = marker.get('time') - durationDiff > roundTime;
+
+      if (newMarkerTime > roundDuration) {
+        return state;
+      }
+
+      const mostForwardMarker = !markers.find(m => {
+        return m.get('id') !== marker.get('id') &&
+        m.get('time') > newMarkerTime;
+      });
 
       let newRoundTime;
       if (mostForwardMarker) {
@@ -282,33 +290,22 @@ export default function reducer(state = initialState, action = {}) {
   case types.REMOVE_MARKER: {
     const markerId          = action.data.toString();
     const roundTime         = state.get('roundTime');
-    const roundDuration     = state.get('roundDuration');
     const markers           = state.get('markers');
     const marker            = markers.get(markerId);
     const markerTime        = marker.get('time');
     const mostForwardMarker = roundTime === markerTime;
+    const newMarkers        = markers.delete(markerId);
 
     let newRoundTime = roundTime;
     if (mostForwardMarker && markers.size > 1) {
-      let min = roundDuration;
-      markers.map(m => {
-        if (m.get('id') === parseInt(markerId)) {
-          return;
-        }
-        const time = m.get('time');
-        if (time < min) {
-          min = time;
-        }
-      });
-
-      newRoundTime = min;
-    } else if (markers.size === 1) {
-      newRoundTime = roundDuration;
+      newRoundTime = newMarkers.max((a, b) => a.get('time') > b.get('time')).get('time');
+    } else if (newMarkers.size === 0) {
+      newRoundTime = 0;
     }
 
     return state.withMutations(newState => {
       newState.set('roundTime', newRoundTime);
-      newState.deleteIn(['markers', markerId]);
+      newState.set('markers', newMarkers);
     });
   }
 
