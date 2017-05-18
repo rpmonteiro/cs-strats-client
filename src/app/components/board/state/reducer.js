@@ -20,13 +20,12 @@ export default function reducer(state = initialState, action = {}) {
       }
 
       const { x, y } = action.data;
-      const roundDuration = state.get('roundDuration');
       const id = state.get('markers').size + 1;
       const markerObj = {
         id: id,
         x: x,
         y: y,
-        time: roundDuration,
+        time: 0,
         paths: []
       };
       return state.setIn(['markers', id.toString()], fromJS(markerObj));
@@ -121,7 +120,7 @@ export default function reducer(state = initialState, action = {}) {
       const duration  = coordsToSecs(coords);
       const roundTime = state.get('roundTime');
       const newTime   = parseFloat((prevNode.get('time') + duration).toFixed(1));
-
+      console.log(prevNode.toJS(), duration);
       if (newTime > roundDuration) {
         return state;
       }
@@ -359,20 +358,15 @@ export default function reducer(state = initialState, action = {}) {
         np.set(pathIdx, newPath);
         np.map((p, idx) => {
           if (idx > pathIdx) {
-            console.log('path time', p.get('time'), durationDiff);
             np.setIn([idx, 'time'], p.get('time') + durationDiff);
           }
         });
       });
 
-      const timePassed = newPaths.reduce((a, b) => {
-        return a + b.get('time');
-      }, 0);
-
-      newMarkerTime = roundDuration - timePassed;
+      newMarkerTime = newPaths.reduce((a, b) => a + b.get('time'), 0);
     } else {
       const timeDiff = pathToDel.get('time') - prevPath.get('time');
-      newMarkerTime = marker.get('time') + timeDiff;
+      newMarkerTime = marker.get('time') - timeDiff;
     }
 
 

@@ -107,7 +107,7 @@ describe('Board reducer', () => {
         id: 1,
         x: 500,
         y: 500,
-        time: 87,
+        time: 0,
         paths: []
       });
     });
@@ -124,7 +124,7 @@ describe('Board reducer', () => {
         id: 6,
         x: 500,
         y: 500,
-        time: 87,
+        time: 0,
         paths: []
       });
     });
@@ -747,14 +747,13 @@ describe('Board reducer', () => {
 
       it('should reset the roundTime to roundDuration if deleting the only marker', () => {
         const initialState = reducer(simpleState);
-
-        expect(initialState.get('roundTime')).toEqual(0);
+        expect(initialState.get('roundTime')).toEqual(5);
 
         const actionData = 1;
         const state = reducer(initialState, actions.removeMarker(actionData));
 
         expect(state.getIn(['markers', '1'])).toNotExist();
-        expect(state.get('roundTime')).toEqual(initialState.get('roundDuration'));
+        expect(state.get('roundTime')).toEqual(0);
       });
 
     });
@@ -846,34 +845,34 @@ describe('Board reducer', () => {
     });
 
 
-    // it('should handle deleting the first path', () => {
-    //   const initialState = reducer(simpleState);
-    //
-    //   const actionData = {
-    //     markerId: '1',
-    //     pathIdx: 0
-    //   };
-    //
-    //   const markerK = ['markers', actionData.markerId];
-    //   const pathsK = [...markerK, 'paths'];
-    //   const pKey = [...pathsK, actionData.pathIdx];
-    //
-    //   const initMarker = initialState.getIn(markerK).toJS();
-    //   const initNextPath = initialState.getIn([...pathsK, actionData.pathIdx + 1]).toJS();
-    //   expect(initialState.getIn(pKey.slice(0, 3)).size).toEqual(2);
-    //
-    //   const state = reducer(initialState, actions.removePath(actionData));
-    //   expect(state.getIn(pKey.slice(0, 3)).size).toEqual(1);
-    //
-    //   const marker = state.getIn(markerK).toJS();
-    //   const newPath = state.getIn(pKey).toJS();
-    //
-    //   expect(marker.time).toEqual(initMarker.time);
-    //   expect(newPath.x1).toEqual(marker.x);
-    //   expect(newPath.x2).toEqual(initNextPath.x2);
-    //   expect(newPath.y1).toEqual(marker.y);
-    //   expect(newPath.y2).toEqual(initNextPath.y2);
-    // });
+    it('should handle deleting the first path', () => {
+      const initialState = reducer(simpleState);
+
+      const actionData = {
+        markerId: '1',
+        pathIdx: 0
+      };
+
+      const markerK = ['markers', actionData.markerId];
+      const pathsK = [...markerK, 'paths'];
+      const pKey = [...pathsK, actionData.pathIdx];
+
+      const initMarker = initialState.getIn(markerK).toJS();
+      const initNextPath = initialState.getIn([...pathsK, actionData.pathIdx + 1]).toJS();
+      expect(initialState.getIn(pathsK).size).toEqual(2);
+      expect(initMarker.time).toEqual(5);
+
+      const state = reducer(initialState, actions.removePath(actionData));
+      expect(state.getIn(pathsK).size).toEqual(1);
+
+      const marker = state.getIn(markerK).toJS();
+      const newPath = state.getIn(pKey).toJS();
+      expect(newPath.x1).toEqual(marker.x);
+      expect(newPath.x2).toEqual(initNextPath.x2);
+      expect(newPath.y1).toEqual(marker.y);
+      expect(newPath.y2).toEqual(initNextPath.y2);
+      expect(marker.time).toEqual(7);
+    });
 
 
     it('should update the marker time', () => {
@@ -900,7 +899,7 @@ describe('Board reducer', () => {
       const marker = state.getIn(markerK).toJS();
       const timeDiff = pathToDel.time - prevPath.time;
 
-      expect(marker.time).toEqual(initMarker.time + timeDiff);
+      expect(marker.time).toEqual(initMarker.time - timeDiff);
     });
 
 
