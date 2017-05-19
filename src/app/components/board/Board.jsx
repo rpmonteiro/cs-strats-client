@@ -344,7 +344,7 @@ export class Board extends PureComponent {
   render() {
     const { markers, previewLine, dispatch, caretTime } = this.props;
     const { activeMarkerId } = this.state;
-
+    console.log('markers', markers.toJS());
     const pathEls = [], markerEls = [];
     if (markers.size) {
       markers.map(m => {

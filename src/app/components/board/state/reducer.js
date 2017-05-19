@@ -351,6 +351,7 @@ export default function reducer(state = initialState, action = {}) {
       const newPathDuration = coordsToSecs(newPath);
       durationDiff = newPathDuration - pathToDel.get('time');
 
+      console.log(prevPath.toJS(), newPathDuration);
       const newPathTime = prevPath.get('time') + newPathDuration;
       newPath = newPath.set('time', newPathTime);
       newPaths = newPaths.withMutations(np => {
@@ -361,7 +362,7 @@ export default function reducer(state = initialState, action = {}) {
           }
         });
       });
-
+      console.log(newPathTime);
       newMarkerTime = newPaths.last().get('time');
     } else {
       const timeDiff = pathToDel.get('time') - prevPath.get('time');
@@ -372,18 +373,17 @@ export default function reducer(state = initialState, action = {}) {
     let newRoundTime = roundTime + durationDiff;
     const markerTime = marker.get('time');
     const mostFwM = markerTime === roundTime;
-    if (mostFwM) {
-      const nextMostFwMTime = markers.max((a, b) => {
+    if (mostFwM && newPaths.size > 1) {
+      const nextMostFwM = markers.max((a, b) => {
         return a.get('time') > b.get('time')
           && a.get('id') !== marker.get('id');
       });
 
-      if (nextMostFwMTime.get('time') > newRoundTime) {
-        newRoundTime = nextMostFwMTime;
+      if (nextMostFwM && nextMostFwM.get('time') > newRoundTime) {
+        newRoundTime = nextMostFwM.get('time');
       }
     }
 
-    // console.log('newRoundTime', newRoundTime, 'newPaths', newPaths.toJS());
     return state.withMutations(newState => {
       newState.setIn(pathsK, newPaths);
       newState.setIn([...markerK, 'time'], newMarkerTime);
