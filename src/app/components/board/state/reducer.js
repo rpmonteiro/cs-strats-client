@@ -184,8 +184,8 @@ export default function reducer(state = initialState, action = {}) {
 
       const firstPath = pathIdx === 0;
       const lastPath  = pathIdx === paths.size - 1;
-      const prevPath  = firstPath ? '' : paths.get(pathIdx - 1);
-      const nextPath  = lastPath ? '' : paths.get(pathIdx + 1);
+      const prevPath  = firstPath ? false : paths.get(pathIdx - 1);
+      const nextPath  = lastPath ? false : paths.get(pathIdx + 1);
 
       let x1, y1, x2, y2;
       if (firstPath) {
@@ -207,19 +207,27 @@ export default function reducer(state = initialState, action = {}) {
 
       const coords           = Map({ x1, y1, x2, y2});
       let newPath            = path.merge(coords);
+      console.log('newPath', newPath.toJS());
       const prevPathTime     = prevPath ? prevPath.get('time') : 0;
+      console.log('prevPath', prevPath && prevPath.toJS());
+      console.log('prevPathTime', prevPathTime);
+      const prevDuration = path.get('time') - prevPathTime;
+      console.log('prevDuration', prevDuration);
       const prevPathDuration = prevPathTime -
         (pathIdx - 2 >= 0 ? paths.getIn([pathIdx - 2, 'time']) : 0);
-
-      const newPathDuration = coordsToSecs(coords);
-      const durationDiff    = prevPathDuration - newPathDuration;
-      const newPathTime     = path.get('time') - durationDiff;
-
+      const newDuration = coordsToSecs(coords);
+      console.log('prevPathDuration', prevPathDuration, 'newDuration', newDuration);
+      // const durationDiff    = prevPathDuration ? newPathDuration - prevPathDuration : newPathDuration - path.get('time');
+      const durationDiff = newDuration - prevDuration;
+      console.log('durationDiff', durationDiff);
+      const newPathTime     = path.get('time') + durationDiff;
+      console.log('pathTime', path.get('time'), 'newPathTime', newPathTime);
       let newPaths = paths;
       newPath  = newPath.set('time', newPathTime);
       newPaths = newPaths.withMutations(np => {
         np.set(pathIdx, newPath);
-        prevPath && np.set(pathIdx - 1, prevPath.merge(Map({ x2: x, y2: y })));
+        console.log(prevPath && prevPath.toJS())
+        // prevPath && np.set(pathIdx - 1, prevPath.merge(Map({ x2: x, y2: y })));
         nextPath && np.set(pathIdx + 1, nextPath.merge(Map({ x1: x, y1: y })));
       });
 
@@ -227,12 +235,13 @@ export default function reducer(state = initialState, action = {}) {
         newPaths.map((p, idx) => {
           if (idx > pathIdx) {
             const k = [idx, 'time'];
-            np.setIn(k, np.getIn(k) - durationDiff);
+            np.setIn(k, np.getIn(k) + durationDiff);
           }
         });
       });
 
-      const newMarkerTime = parseFloat((marker.get('time') - durationDiff).toFixed(1));
+      const newMarkerTime = parseFloat((marker.get('time') + durationDiff).toFixed(1));
+      console.log('newMarkerTime', newMarkerTime);
 
       if (newMarkerTime > roundDuration) {
         return state;
@@ -242,11 +251,12 @@ export default function reducer(state = initialState, action = {}) {
         return m.get('id') !== marker.get('id') &&
         m.get('time') > newMarkerTime;
       });
-
+      console.log('mostForwardMarker', mostForwardMarker);
       let newRoundTime;
       if (mostForwardMarker) {
         newRoundTime = newMarkerTime;
       }
+      console.log('newRoundTime', newRoundTime);
 
       const k = ['markers', markerId];
       return state.withMutations(newState => {
@@ -351,7 +361,6 @@ export default function reducer(state = initialState, action = {}) {
       const newPathDuration = coordsToSecs(newPath);
       durationDiff = newPathDuration - pathToDel.get('time');
 
-      console.log(prevPath.toJS(), newPathDuration);
       const newPathTime = prevPath.get('time') + newPathDuration;
       newPath = newPath.set('time', newPathTime);
       newPaths = newPaths.withMutations(np => {
@@ -362,7 +371,7 @@ export default function reducer(state = initialState, action = {}) {
           }
         });
       });
-      console.log(newPathTime);
+
       newMarkerTime = newPaths.last().get('time');
     } else {
       const timeDiff = pathToDel.get('time') - prevPath.get('time');
